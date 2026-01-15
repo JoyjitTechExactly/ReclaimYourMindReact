@@ -23,6 +23,47 @@ export const SIGN_IN = {
   LOGIN_BUTTON: 'Log In',
 } as const;
 
+// Forgot Password Screen
+export const FORGOT_PASSWORD = {
+  TITLE: 'Reset Password',
+  SUBTITLE: 'Enter your email or phone number to reset your password',
+  EMAIL_LABEL: 'Email',
+  EMAIL_PLACEHOLDER: 'Enter your email',
+  INFO_TEXT: "We'll send you a 6-digit verification code to reset your password securely.",
+  SEND_CODE_BUTTON: 'Send Reset Code',
+} as const;
+
+// OTP Screen
+export const OTP_CONSTANTS = {
+  TITLE: 'Verify Your Account',
+  SUBTITLE: "We've sent a 6-digit verification code to your email. Please enter it below to continue.",
+  VERIFY_BUTTON: 'Verify Code',
+  RESEND_TEXT: "Didn't receive the code?",
+} as const;
+
+// Reset Password Screen
+export const RESET_PASSWORD = {
+  TITLE: 'Reset Password',
+  SUBTITLE: 'Create your new password',
+  PASSWORD_LABEL: 'Password',
+  PASSWORD_PLACEHOLDER: 'Create a password',
+  CONFIRM_PASSWORD_LABEL: 'Confirm Password',
+  CONFIRM_PASSWORD_PLACEHOLDER: 'Confirm your password',
+  REQUIREMENT_LENGTH: 'At least 8 characters',
+  REQUIREMENT_UPPERCASE: 'One uppercase letter',
+  REQUIREMENT_LOWERCASE: 'One lowercase letter',
+  REQUIREMENT_NUMBER: 'One number',
+  REQUIREMENT_SPECIAL: 'One special character',
+  SAVE_BUTTON: 'Save New Password',
+} as const;
+
+// Password Confirmation Screen
+export const PASSWORD_CONFIRMATION = {
+  TITLE: 'Password Created Successfully!',
+  SUBTITLE: 'Your password has been reset successfully. You can now log in with your new password.',
+  LOGIN_BUTTON: 'Log In',
+} as const;
+
 // Sign Up Screen
 export const SIGN_UP = {
   TITLE: 'Your Safe Space',

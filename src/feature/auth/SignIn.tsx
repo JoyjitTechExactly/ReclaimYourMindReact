@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigators/types';
 import { COLORS } from '../../constants/colors';
+import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../utils/scaling';
 import BackButton from '../../components/BackButton';
 import { SIGN_IN, ERRORS, ICONS } from '../../constants/strings';
@@ -30,6 +31,7 @@ const SignIn: React.FC = () => {
 
   const handleForgotPassword = () => {
     // Handle forgot password logic here
+    navigation.navigate('ForgotPassword');
     console.log('Forgot password');
   };
 
@@ -45,7 +47,7 @@ const SignIn: React.FC = () => {
         {/* Back Arrow */}
         <BackButton onPress={handleBack} />
 
-        <View style={{ marginTop: scale(40), alignItems: 'center' }}>
+        <View style={{ marginTop: scale(35), alignItems: 'center' }}>
           <Text style={commonStyles.title}>{SIGN_IN.TITLE}</Text>
           <Text style={commonStyles.subtitle}>{SIGN_IN.SUBTITLE}</Text>
         </View>
@@ -79,7 +81,11 @@ const SignIn: React.FC = () => {
                 style={commonStyles.eyeIcon}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text style={commonStyles.eyeIconText}>{showPassword ? ICONS.EYE_OPEN : ICONS.EYE_CLOSED}</Text>
+                <Image
+                  source={showPassword ? ImagePath.EyeOpen : ImagePath.EyeClosed}
+                  style={commonStyles.smallIcon}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
             </View>
           </View>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -27,57 +27,71 @@ const Onboard: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
-      <Image
-        source={ImagePath.OnboardingHeader}
-        style={styles.logoImage}
-        resizeMode="cover"
-      />
-      <View style={commonStyles.contentContainer}>
-        <Text style={[commonStyles.titleCentered, { marginBottom: scale(6) }]}>{ONBOARDING.TITLE}</Text>
-        <Text style={[commonStyles.subtitleCentered, { marginBottom: scale(16) }]}>{ONBOARDING.SUBTITLE}</Text>
+      <ScrollView 
+        style={commonStyles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Image
+          source={ImagePath.OnboardingHeader}
+          style={styles.logoImage}
+          resizeMode="cover"
+        />
+        <View style={styles.contentContainer}>
+          <Text style={[commonStyles.titleCentered]}>{ONBOARDING.TITLE}</Text>
+          <Text style={[commonStyles.subtitleCentered, { marginTop: scale(6), marginBottom: scale(16) }]}>{ONBOARDING.SUBTITLE}</Text>
 
-        <Text style={[commonStyles.description, { fontSize: scaleFont(18), fontWeight:600 , marginBottom:0}]}>
-          {ONBOARDING.AWARENESS_LINE1}
-        </Text>
-        <Text style={[commonStyles.description, { marginBottom: scale(36) }]}>{ONBOARDING.AWARENESS_LINE2}</Text>
+          <Text style={[commonStyles.description, { fontSize: scaleFont(16), fontWeight:600 , marginBottom:0}]}>
+            {ONBOARDING.AWARENESS_LINE1}
+          </Text>
+          <Text style={[commonStyles.description, { fontSize: scaleFont(14)}]}>{ONBOARDING.AWARENESS_LINE2}</Text>
 
-          <View style={[commonStyles.buttonContainer, { marginBottom: scale(60) }]}>
-          <CustomButton
-            title={ONBOARDING.CREATE_ACCOUNT}
-            onPress={handleCreateAccount}
-            style={{marginBottom: scale(20)}}
-          />
-
-          <View style={styles.loginSection}>
-            <Text style={styles.alreadyHaveAccountText}>{ONBOARDING.ALREADY_HAVE_ACCOUNT}</Text>
+            <View style={[commonStyles.buttonContainer, { marginTop: scale(36) }]}>
             <CustomButton
-              title={ONBOARDING.LOG_IN}
-              onPress={handleLogIn}
-              fullWidth={false}
-              variant="login"
+              title={ONBOARDING.CREATE_ACCOUNT}
+              onPress={handleCreateAccount}
             />
-          </View>
-        </View>
-          <View style={commonStyles.privacyContainer}>
-            <Image
-              source={ImagePath.Security}
-              style={commonStyles.smallIcon}
-              resizeMode="contain"
-            />
-            <View style={styles.privacyTextContainer}>
-              <Text style={commonStyles.textTiny}>{ONBOARDING.PRIVACY_TEXT_LINE1}</Text>
-              <Text style={commonStyles.textTiny}>{ONBOARDING.PRIVACY_TEXT_LINE2}</Text>
+
+            <View style={[styles.loginSection, { marginTop: scale(18) }]}>
+              <Text style={styles.alreadyHaveAccountText}>{ONBOARDING.ALREADY_HAVE_ACCOUNT}</Text>
+              <CustomButton
+                title={ONBOARDING.LOG_IN}
+                onPress={handleLogIn}
+                fullWidth={false}
+                variant="login"
+              />
             </View>
           </View>
-        </View>
+            <View style={[commonStyles.privacyContainer, {marginTop:scale(60), marginBottom: scale(40) }]}>
+              <Image
+                source={ImagePath.Security}
+                style={commonStyles.smallIcon}
+                resizeMode="contain"
+              />
+              <View style={styles.privacyTextContainer}>
+                <Text style={commonStyles.textTiny}>{ONBOARDING.PRIVACY_TEXT_LINE1}</Text>
+                <Text style={commonStyles.textTiny}>{ONBOARDING.PRIVACY_TEXT_LINE2}</Text>
+              </View>
+            </View>
+          </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: scale(20),
+  },
+  contentContainer: {
+    paddingHorizontal: scale(16),
+    paddingTop: scale(20),
+    paddingBottom: scale(20),
+  },
   logoImage: {
     width: '100%',
-    height: scaleHeight(312),
+    height: scaleHeight(300),
   },
   loginSection: {
     flexDirection: 'row',

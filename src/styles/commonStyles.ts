@@ -33,13 +33,13 @@ export const commonStyles = StyleSheet.create({
   // Text styles
   title: {
     fontSize: scaleFont(28),
-    fontWeight: 'bold',
+    fontWeight: 600,
     color: COLORS.PRIMARY,
     fontFamily: 'varela_round_regular',
   },
   titleCentered: {
     fontSize: scaleFont(28),
-    fontWeight: 'bold',
+    fontWeight: 600,
     color: COLORS.PRIMARY,
     fontFamily: 'varela_round_regular',
     textAlign: 'center',
@@ -48,16 +48,20 @@ export const commonStyles = StyleSheet.create({
     fontSize: scaleFont(16),
     color: COLORS.TEXT_PRIMARY,
     fontFamily: 'varela_round_regular',
+    textAlign: 'center',
+    marginTop: scale(6),
   },
   subtitleCentered: {
     fontSize: scaleFont(20),
     color: COLORS.PRIMARY,
+    fontWeight: 400,
     fontFamily: 'varela_round_regular',
     textAlign: 'center',
   },
   description: {
     fontSize: scaleFont(16),
     color: COLORS.TEXT_PRIMARY,
+    fontWeight: 400,
     fontFamily: 'varela_round_regular',
     textAlign: 'center',
     lineHeight: scaleFont(24),
@@ -93,8 +97,8 @@ export const commonStyles = StyleSheet.create({
   inputContainer: {
   },
   inputLabel: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
+    fontSize: scaleFont(14),
+    fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: 'varela_round_regular',
     marginBottom: scale(8),

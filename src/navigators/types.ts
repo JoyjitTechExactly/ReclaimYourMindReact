@@ -2,6 +2,10 @@ export type AuthStackParamList = {
   Onboard: undefined;
   SignIn: undefined;
   SignUp: undefined;
+  ForgotPassword: undefined;
+  OTP: { email: string };
+  ResetPassword: { email: string };
+  PasswordConfirmation: undefined;
 };
 
 export type AppStackParamList = {

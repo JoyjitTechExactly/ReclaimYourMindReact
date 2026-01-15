@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { ImagePath } from '../../constants/imagePath';
-import { scale, scaleHeight, scaleFont } from '../../utils/scaling';
-import BackButton from '../../components/BackButton';
-import { SIGN_UP, ERRORS, ICONS } from '../../constants/strings';
-import CustomButton from '../../components/CustomButton';
-import { commonStyles } from '../../styles/commonStyles';
+import { AuthStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
+import BackButton from '../../../components/BackButton';
+import { RESET_PASSWORD, ERRORS } from '../../../constants/strings';
+import CustomButton from '../../../components/CustomButton';
+import { commonStyles } from '../../../styles/commonStyles';
 
-type SignUpNavigationProp = StackNavigationProp<AuthStackParamList, 'SignUp'>;
+type SetNewPasswordNavigationProp = StackNavigationProp<AuthStackParamList, 'ResetPassword'>;
+type SetNewPasswordRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;
 
-const SignUp: React.FC = () => {
-  const navigation = useNavigation<SignUpNavigationProp>();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+const SetNewPassword: React.FC = () => {
+  const navigation = useNavigation<SetNewPasswordNavigationProp>();
+  const route = useRoute<SetNewPasswordRouteProp>();
+  const { email } = route.params;
+  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validatePassword = (password: string) => {
     const requirements = {
@@ -35,31 +38,6 @@ const SignUp: React.FC = () => {
   };
 
   const passwordRequirements = validatePassword(password);
-
-  const handleSignUp = () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', ERRORS.PASSWORDS_DO_NOT_MATCH);
-      return;
-    }
-
-    const isValid = Object.values(passwordRequirements).every(Boolean);
-    if (!isValid) {
-      Alert.alert('Error', ERRORS.PASSWORD_REQUIREMENTS);
-      return;
-    }
-
-    // Handle sign up logic here
-    console.log('Sign up with:', fullName, email, password);
-  };
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
 
   const RequirementItem: React.FC<{ text: string; isValid: boolean }> = ({ text, isValid }) => (
     <View style={styles.passwordRule}>
@@ -75,6 +53,37 @@ const SignUp: React.FC = () => {
     </View>
   );
 
+  const handleSavePassword = () => {
+    if (!password || !confirmPassword) {
+      Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', ERRORS.PASSWORDS_DO_NOT_MATCH);
+      return;
+    }
+
+    const isValid = Object.values(passwordRequirements).every(Boolean);
+    if (!isValid) {
+      Alert.alert('Error', ERRORS.PASSWORD_REQUIREMENTS);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to Password Confirmation screen
+      navigation.navigate('PasswordConfirmation');
+    }, 1000);
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
   const insets = useSafeAreaInsets();
 
   return (
@@ -85,43 +94,19 @@ const SignUp: React.FC = () => {
           <BackButton onPress={handleBack} />
 
           <View style={{ marginTop: scale(35), alignItems: 'center' }}>
-            <Text style={commonStyles.title}>{SIGN_UP.TITLE}</Text>
-            <Text style={[commonStyles.subtitle, { lineHeight: scaleFont(24) }]}>{SIGN_UP.SUBTITLE}</Text>
+            <Text style={commonStyles.title}>{RESET_PASSWORD.TITLE}</Text>
+            <Text style={[commonStyles.subtitle, { lineHeight: scaleFont(24) }]}>{RESET_PASSWORD.SUBTITLE}</Text>
           </View>
 
           <View style={[commonStyles.form, { marginTop: scale(56) }]}>
-            <View style={[commonStyles.inputContainer, { marginBottom: scale(24)}]}>
-              <Text style={commonStyles.inputLabel}>{SIGN_UP.FULL_NAME_LABEL}</Text>
-              <TextInput
-                style={commonStyles.input}
-                value={fullName}
-                onChangeText={setFullName}
-                placeholder={SIGN_UP.FULL_NAME_PLACEHOLDER}
-                placeholderTextColor={COLORS.GRAY}
-              />
-            </View>
-
-            <View style={[commonStyles.inputContainer, { marginBottom: scale(24)}]}>
-              <Text style={commonStyles.inputLabel}>{SIGN_UP.EMAIL_LABEL}</Text>
-              <TextInput
-                style={commonStyles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={SIGN_UP.EMAIL_PLACEHOLDER}
-                placeholderTextColor={COLORS.GRAY}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
             <View style={[commonStyles.inputContainer]}>
-              <Text style={commonStyles.inputLabel}>{SIGN_UP.PASSWORD_LABEL}</Text>
+              <Text style={commonStyles.inputLabel}>{RESET_PASSWORD.PASSWORD_LABEL}</Text>
               <View style={commonStyles.passwordContainer}>
                 <TextInput
                   style={commonStyles.input}
                   value={password}
                   onChangeText={setPassword}
-                  placeholder={SIGN_UP.PASSWORD_PLACEHOLDER}
+                  placeholder={RESET_PASSWORD.PASSWORD_PLACEHOLDER}
                   placeholderTextColor={COLORS.GRAY}
                   secureTextEntry={!showPassword}
                 />
@@ -140,21 +125,21 @@ const SignUp: React.FC = () => {
 
             {/* Password Requirements */}
             <View style={[styles.passwordValidationContainer, { marginBottom: scale(20) }]}>
-              <RequirementItem text={SIGN_UP.REQUIREMENT_LENGTH} isValid={passwordRequirements.length} />
-              <RequirementItem text={SIGN_UP.REQUIREMENT_UPPERCASE} isValid={passwordRequirements.uppercase} />
-              <RequirementItem text={SIGN_UP.REQUIREMENT_LOWERCASE} isValid={passwordRequirements.lowercase} />
-              <RequirementItem text={SIGN_UP.REQUIREMENT_NUMBER} isValid={passwordRequirements.number} />
-              <RequirementItem text={SIGN_UP.REQUIREMENT_SPECIAL} isValid={passwordRequirements.special} />
+              <RequirementItem text={RESET_PASSWORD.REQUIREMENT_LENGTH} isValid={passwordRequirements.length} />
+              <RequirementItem text={RESET_PASSWORD.REQUIREMENT_UPPERCASE} isValid={passwordRequirements.uppercase} />
+              <RequirementItem text={RESET_PASSWORD.REQUIREMENT_LOWERCASE} isValid={passwordRequirements.lowercase} />
+              <RequirementItem text={RESET_PASSWORD.REQUIREMENT_NUMBER} isValid={passwordRequirements.number} />
+              <RequirementItem text={RESET_PASSWORD.REQUIREMENT_SPECIAL} isValid={passwordRequirements.special} />
             </View>
 
-            <View style={[commonStyles.inputContainer, { marginBottom: scale(24)}]}>
-              <Text style={commonStyles.inputLabel}>{SIGN_UP.CONFIRM_PASSWORD_LABEL}</Text>
+            <View style={[commonStyles.inputContainer, { marginBottom: scale(24) }]}>
+              <Text style={commonStyles.inputLabel}>{RESET_PASSWORD.CONFIRM_PASSWORD_LABEL}</Text>
               <View style={commonStyles.passwordContainer}>
                 <TextInput
                   style={commonStyles.input}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
-                  placeholder={SIGN_UP.CONFIRM_PASSWORD_PLACEHOLDER}
+                  placeholder={RESET_PASSWORD.CONFIRM_PASSWORD_PLACEHOLDER}
                   placeholderTextColor={COLORS.GRAY}
                   secureTextEntry={!showConfirmPassword}
                 />
@@ -172,8 +157,9 @@ const SignUp: React.FC = () => {
             </View>
 
             <CustomButton
-              title={SIGN_UP.CREATE_ACCOUNT}
-              onPress={handleSignUp}
+              title={RESET_PASSWORD.SAVE_BUTTON}
+              onPress={handleSavePassword}
+              disabled={isLoading}
               style={{ marginTop: scale(24) }}
             />
           </View>
@@ -216,4 +202,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUp;
+export default SetNewPassword;
