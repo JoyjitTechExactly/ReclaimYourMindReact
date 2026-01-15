@@ -1,0 +1,32 @@
+import React, { useEffect } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { useSelector } from 'react-redux';
+import AuthNavigator from './AuthNavigator';
+import AppNavigator from './AppNavigator';
+import { RootState } from '../redux/store';
+import { RootStackParamList } from './types';
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+const RootNavigator: React.FC = () => {
+  // For now, we'll assume user is not authenticated
+  // In a real app, you would check authentication state from Redux
+  const isAuthenticated = false; // This will come from your auth state
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+      }}
+    >
+      {isAuthenticated ? (
+        <Stack.Screen name="App" component={AppNavigator} />
+      ) : (
+        <Stack.Screen name="Auth" component={AuthNavigator} />
+      )}
+    </Stack.Navigator>
+  );
+};
+
+export default RootNavigator;
