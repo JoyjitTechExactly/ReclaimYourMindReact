@@ -8,7 +8,7 @@ import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
 import { PASSWORD_CONFIRMATION } from '../../../constants/strings';
-import CustomButton from '../../../components/CustomButton';
+import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
 
 type PasswordConfirmationNavigationProp = StackNavigationProp<AuthStackParamList, 'PasswordConfirmation'>;

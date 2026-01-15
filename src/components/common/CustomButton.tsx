@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { COLORS } from '../constants/colors';
-import { scale, scaleFont } from '../utils/scaling';
+import { scale, scaleFont } from '../../utils/scaling';
+import { COLORS } from '../../constants/colors';
 
 interface DefaultButtonProps {
   title: string;

@@ -73,7 +73,7 @@ export const SIGN_UP = {
   EMAIL_LABEL: 'Email',
   EMAIL_PLACEHOLDER: 'Enter your email',
   PASSWORD_LABEL: 'Password',
-  PASSWORD_PLACEHOLDER: 'Enter your password',
+  PASSWORD_PLACEHOLDER: 'Create a password',
   CONFIRM_PASSWORD_LABEL: 'Confirm Password',
   CONFIRM_PASSWORD_PLACEHOLDER: 'Confirm your password',
   PASSWORD_REQUIREMENTS_TITLE: 'Password must contain:',
@@ -83,6 +83,21 @@ export const SIGN_UP = {
   REQUIREMENT_NUMBER: 'One number',
   REQUIREMENT_SPECIAL: 'One special character',
   CREATE_ACCOUNT: 'Create Account',
+  START_JOURNEY: {
+    TITLE: 'Your Empowerment Journey',
+    SUBTITLE: 'This journey will help you identify emotional abuse, process your feelings, learn healthy relationship strategies, and move toward growth and healing.',
+    GET_STARTED_BUTTON: 'Start My Journey',
+    FOOTER_TEXT: 'You decide the pace. Nothing here is rushed.',
+  },
+  CONFIRMATION: {
+    TITLE: 'A Final Step Before We Get Started',
+    SUBTITLE: 'This is an educational space to better understand emotionally abusive behaviors and to learn more effective coping strategies.',
+    DESCRIPTION: 'If you are in crisis or need immediate help, please reach out to a trusted professional or local hotline.',
+    CONTINUE_BUTTON: 'Swipe to Begin Your Journey',
+    DISCLAIMER: 'Your journey to healing starts here. Take your time and be kind to yourself.',
+    BUTTON_TEXT: 'Swipe to Begin Your Journey',
+    FOOTER_TEXT: 'You decide the pace. Nothing here is rushed.',
+  },
 } as const;
 
 // Auth Input Component
@@ -125,6 +140,11 @@ export const ERRORS = {
   FILL_ALL_FIELDS: 'Please fill in all fields',
   PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
   PASSWORD_REQUIREMENTS: 'Password does not meet all requirements',
+} as const;
+
+// Swipe Button Component
+export const SWIPE_BUTTON = {
+  DEFAULT_TEXT: 'Swipe to Begin Your Journey',
 } as const;
 
 // Eye Icons for Password Visibility

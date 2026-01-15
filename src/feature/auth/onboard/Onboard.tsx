@@ -3,13 +3,13 @@ import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { ImagePath } from '../../constants/imagePath';
-import { scale, scaleHeight, scaleFont, scaleWidth } from '../../utils/scaling';
-import { ONBOARDING } from '../../constants/strings';
-import CustomButton from '../../components/CustomButton';
-import { commonStyles } from '../../styles/commonStyles';
+import { AuthStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleHeight, scaleFont, scaleWidth } from '../../../utils/scaling';
+import { ONBOARDING } from '../../../constants/strings';
+import CustomButton from '../../../components/common/CustomButton';
+import { commonStyles } from '../../../styles/commonStyles';
 
 type OnboardNavigationProp = StackNavigationProp<AuthStackParamList, 'Onboard'>;
 
@@ -23,10 +23,9 @@ const Onboard: React.FC = () => {
   const handleLogIn = () => {
     navigation.navigate('SignIn');
   };
-  const insets = useSafeAreaInsets();
 
   return (
-    <View style={[commonStyles.container, { paddingTop: insets.top }]}>
+    <View style={[commonStyles.container]}>
       <ScrollView 
         style={commonStyles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -39,7 +38,7 @@ const Onboard: React.FC = () => {
         />
         <View style={styles.contentContainer}>
           <Text style={[commonStyles.titleCentered]}>{ONBOARDING.TITLE}</Text>
-          <Text style={[commonStyles.subtitleCentered, { marginTop: scale(6), marginBottom: scale(16) }]}>{ONBOARDING.SUBTITLE}</Text>
+          <Text style={[commonStyles.subtitle18BlackCentered, { marginTop: scale(6), marginBottom: scale(16) }]}>{ONBOARDING.SUBTITLE}</Text>
 
           <Text style={[commonStyles.description, { fontSize: scaleFont(16), fontWeight:600 , marginBottom:0}]}>
             {ONBOARDING.AWARENESS_LINE1}
@@ -91,7 +90,7 @@ const styles = StyleSheet.create({
   },
   logoImage: {
     width: '100%',
-    height: scaleHeight(300),
+    height: scaleHeight(350),
   },
   loginSection: {
     flexDirection: 'row',

@@ -7,9 +7,9 @@ import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
-import BackButton from '../../../components/BackButton';
+import BackButton from '../../../components/common/BackButton';
 import { FORGOT_PASSWORD, ERRORS } from '../../../constants/strings';
-import CustomButton from '../../../components/CustomButton';
+import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
 
 type ForgotPasswordNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
@@ -57,7 +57,7 @@ const ForgotPassword: React.FC = () => {
 
           <View style={{ marginTop: scale(35), alignItems: 'center' }}>
             <Text style={commonStyles.title}>{FORGOT_PASSWORD.TITLE}</Text>
-            <Text style={[commonStyles.subtitle, { lineHeight: scaleFont(24) }]}>{FORGOT_PASSWORD.SUBTITLE}</Text>
+            <Text style={[commonStyles.subtitle18BlackCentered, { lineHeight: scaleFont(24) }]}>{FORGOT_PASSWORD.SUBTITLE}</Text>
           </View>
 
           <View style={[commonStyles.form, { marginTop: scale(56) }]}>

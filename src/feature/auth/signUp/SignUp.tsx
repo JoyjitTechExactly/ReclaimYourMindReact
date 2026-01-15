@@ -3,14 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { ImagePath } from '../../constants/imagePath';
-import { scale, scaleHeight, scaleFont } from '../../utils/scaling';
-import BackButton from '../../components/BackButton';
-import { SIGN_UP, ERRORS, ICONS } from '../../constants/strings';
-import CustomButton from '../../components/CustomButton';
-import { commonStyles } from '../../styles/commonStyles';
+import { AuthStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
+import BackButton from '../../../components/common/BackButton';
+import { SIGN_UP, ERRORS, ICONS } from '../../../constants/strings';
+import CustomButton from '../../../components/common/CustomButton';
+import { commonStyles } from '../../../styles/commonStyles';
 
 type SignUpNavigationProp = StackNavigationProp<AuthStackParamList, 'SignUp'>;
 
@@ -53,8 +53,8 @@ const SignUp: React.FC = () => {
       return;
     }
 
-    // Handle sign up logic here
-    console.log('Sign up with:', fullName, email, password);
+    // Navigate to StartMyJourney screen
+    navigation.navigate('StartMyJourney');
   };
 
   const handleBack = () => {
@@ -86,7 +86,7 @@ const SignUp: React.FC = () => {
 
           <View style={{ marginTop: scale(35), alignItems: 'center' }}>
             <Text style={commonStyles.title}>{SIGN_UP.TITLE}</Text>
-            <Text style={[commonStyles.subtitle, { lineHeight: scaleFont(24) }]}>{SIGN_UP.SUBTITLE}</Text>
+            <Text style={[commonStyles.subtitle18BlackCentered, { lineHeight: scaleFont(24) }]}>{SIGN_UP.SUBTITLE}</Text>
           </View>
 
           <View style={[commonStyles.form, { marginTop: scale(56) }]}>

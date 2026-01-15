@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Onboard, SignIn, SignUp } from '../feature/auth';
 import { ForgotPassword, OTP, ResetPassword, PasswordConfirmation } from '../feature/auth/forgotPwd';
+import { StartMyJourney, SignUpConfirmation } from '../feature/auth/signUp';
 import { AuthStackParamList } from './types';
 import { AUTH_NAVIGATION } from '../constants/strings';
 
@@ -35,6 +36,20 @@ const AuthNavigator: React.FC = () => {
         component={SignUp}
         options={{
           title: AUTH_NAVIGATION.SIGN_UP,
+        }}
+      />
+      <Stack.Screen
+        name="StartMyJourney"
+        component={StartMyJourney}
+        options={{
+          title: 'Start Your Journey',
+        }}
+      />
+      <Stack.Screen
+        name="SignUpConfirmation"
+        component={SignUpConfirmation}
+        options={{
+          title: 'Account Created',
         }}
       />
       <Stack.Screen

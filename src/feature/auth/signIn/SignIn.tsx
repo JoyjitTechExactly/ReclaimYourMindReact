@@ -3,14 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { ImagePath } from '../../constants/imagePath';
-import { scale, scaleHeight, scaleFont } from '../../utils/scaling';
-import BackButton from '../../components/BackButton';
-import { SIGN_IN, ERRORS, ICONS } from '../../constants/strings';
-import CustomButton from '../../components/CustomButton';
-import { commonStyles } from '../../styles/commonStyles';
+import { AuthStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
+import BackButton from '../../../components/common/BackButton';
+import { SIGN_IN, ERRORS, ICONS } from '../../../constants/strings';
+import CustomButton from '../../../components/common/CustomButton';
+import { commonStyles } from '../../../styles/commonStyles';
 
 type SignInNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
 
@@ -49,7 +49,7 @@ const SignIn: React.FC = () => {
 
         <View style={{ marginTop: scale(35), alignItems: 'center' }}>
           <Text style={commonStyles.title}>{SIGN_IN.TITLE}</Text>
-          <Text style={commonStyles.subtitle}>{SIGN_IN.SUBTITLE}</Text>
+          <Text style={commonStyles.subtitle18BlackCentered}>{SIGN_IN.SUBTITLE}</Text>
         </View>
         
         <View style={[commonStyles.form, { marginTop: scale(56)}]}>
