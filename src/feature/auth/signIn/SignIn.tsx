@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useDispatch } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -11,11 +12,13 @@ import BackButton from '../../../components/common/BackButton';
 import { SIGN_IN, ERRORS, ICONS } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
+import { loginSuccess, loginFailure } from '../../../redux/slices/auth/authSlice';
 
 type SignInNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
 
 const SignIn: React.FC = () => {
   const navigation = useNavigation<SignInNavigationProp>();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,8 +28,24 @@ const SignIn: React.FC = () => {
       Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
       return;
     }
-    // Handle sign in logic here
-    console.log('Sign in with:', email, password);
+    
+    // Simulate successful login - in real app, this would be an API call
+    try {
+      const user = {
+        email: email,
+        name: email.split('@')[0], // Extract name from email for demo
+      };
+      const token = 'mock-jwt-token-' + Date.now();
+      
+      // Dispatch login success to Redux
+      dispatch(loginSuccess({ user, token }));
+      
+      // Navigation will be handled automatically by RootNavigator
+      console.log('Login successful for:', email);
+    } catch (error) {
+      dispatch(loginFailure('Login failed. Please try again.'));
+      Alert.alert('Error', 'Login failed. Please try again.');
+    }
   };
 
   const handleForgotPassword = () => {

@@ -9,16 +9,15 @@ import { RootStackParamList } from './types';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
-  // For now, we'll assume user is not authenticated
-  // In a real app, you would check authentication state from Redux
-  const isAuthenticated = false; // This will come from your auth state
+  // Get authentication state from Redux
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
-      }}
+      }}  
     >
       {isAuthenticated ? (
         <Stack.Screen name="App" component={AppNavigator} />

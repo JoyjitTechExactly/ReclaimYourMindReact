@@ -121,9 +121,13 @@ export const PASSWORD_INPUT = {
 // App Navigation
 export const APP_NAVIGATION = {
   HOME: 'Home',
+  RESOURCES: 'Resources',
+  JOURNAL: 'Journal',
   PROFILE: 'Profile',
   SETTINGS: 'Settings',
   HOME_WELCOME: 'Welcome to your safe space',
+  RESOURCES_DESCRIPTION: 'Access helpful resources and tools',
+  JOURNAL_DESCRIPTION: 'Document your thoughts and progress',
   PROFILE_DESCRIPTION: 'Manage your profile',
   SETTINGS_DESCRIPTION: 'App settings and preferences',
 } as const;
@@ -152,6 +156,8 @@ export const ICONS = {
   EYE_OPEN: '👁️',
   EYE_CLOSED: '👁️‍🗨️',
   HOME: '🏠',
+  RESOURCES: '📚',
+  JOURNAL: '📔',
   PROFILE: '👤',
   SETTINGS: '⚙️',
 } as const;

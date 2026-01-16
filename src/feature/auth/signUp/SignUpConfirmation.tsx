@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, ScrollView, BackHandler } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useDispatch } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -11,15 +12,27 @@ import BackButton from '../../../components/common/BackButton';
 import { SIGN_UP } from '../../../constants/strings';
 import SwipeButton from '../../../components/auth/SwipeButton';
 import { commonStyles } from '../../../styles/commonStyles';
+import { signUpSuccess } from '../../../redux/slices/auth/authSlice';
 
 type SignUpConfirmationNavigationProp = StackNavigationProp<AuthStackParamList, 'SignUpConfirmation'>;
 
 const SignUpConfirmation: React.FC = () => {
   const navigation = useNavigation<SignUpConfirmationNavigationProp>();
+  const dispatch = useDispatch();
 
   const handleContinue = () => {
-    // Navigate to SignIn screen
-    navigation.navigate('SignIn');
+    // Simulate successful sign up - in real app, this would get user data from previous steps
+    const user = {
+      email: 'user@example.com', // This would come from sign up form
+      name: 'New User', // This would come from sign up form
+    };
+    const token = 'mock-jwt-token-' + Date.now();
+    
+    // Dispatch sign up success to Redux
+    dispatch(signUpSuccess({ user, token }));
+    
+    // Navigation will be handled automatically by RootNavigator
+    console.log('Sign up successful, navigating to dashboard');
   };
 
   const insets = useSafeAreaInsets();

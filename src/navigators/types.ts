@@ -12,6 +12,8 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Home: undefined;
+  Resources: undefined;
+  Journal: undefined;
   Profile: undefined;
   Settings: undefined;
 };

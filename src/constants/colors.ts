@@ -8,4 +8,13 @@ export const COLORS = {
   GRAY: '#9CA3AF',
   ERROR: '#EF4444',
   SUCCESS: '#10B981',
+  // New colors for HomeScreen
+  TEXT_DARK: '#1A1A1A',
+  TEXT_MUTED: '#666666',
+  TEXT_LIGHT: '#888888',
+  BORDER_LIGHT: '#EEEEEE',
+  BORDER_HEADER: '#F0F0F0',
+  CARD_LIGHT: '#F8F9FF',
+  ICON_BG: '#F0F4FF',
+  SHADOW: 'rgba(0, 0, 0, 0.05)',
 } as const;

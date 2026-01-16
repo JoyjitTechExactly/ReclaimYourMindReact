@@ -1,117 +1,99 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { COLORS } from '../constants/colors';
+import React, { useEffect, useRef } from 'react';
+import { BackHandler, Platform, ToastAndroid } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; import { useNavigation, useRoute, NavigationProp } from '@react-navigation/native';
 import { AppStackParamList } from './types';
-import { scale, scaleFont } from '../utils/scaling';
-import { APP_NAVIGATION, ICONS } from '../constants/strings';
+import HomeScreen from '../feature/home/HomeScreen';
+import ResourcesScreen from '../feature/resources/ResourcesScreen';
+import JournalScreen from '../feature/journal/JournalScreen';
+import ProfileScreen from '../feature/profile/ProfileScreen';
+import CustomTabBar from '../components/common/home/CustomTabBar';
+import Toast from 'react-native-toast-message';
 
 const Tab = createBottomTabNavigator<AppStackParamList>();
 
-// Placeholder components for app screens
-const HomeScreen: React.FC = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenTitle}>{APP_NAVIGATION.HOME}</Text>
-    <Text style={styles.screenText}>{APP_NAVIGATION.HOME_WELCOME}</Text>
-  </View>
-);
-
-const ProfileScreen: React.FC = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenTitle}>{APP_NAVIGATION.PROFILE}</Text>
-    <Text style={styles.screenText}>{APP_NAVIGATION.PROFILE_DESCRIPTION}</Text>
-  </View>
-);
-
-const SettingsScreen: React.FC = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenTitle}>{APP_NAVIGATION.SETTINGS}</Text>
-    <Text style={styles.screenText}>{APP_NAVIGATION.SETTINGS_DESCRIPTION}</Text>
-  </View>
-);
-
 const AppNavigator: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
+  const backPressCount = useRef(0);
+  const backPressTimeout = useRef<number | null>(null)
+
+  useEffect(() => {
+    const onBackPress = () => {
+      backPressCount.current += 1;
+
+      if (backPressCount.current === 1) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+        } else {
+          Toast.show({
+            type: 'info',
+            text1: 'Press again to exit',
+            position: 'bottom',
+          });
+        }
+      } else if (backPressCount.current === 2) {
+        if (Platform.OS === 'android') {
+          BackHandler.exitApp();
+        }
+        return true;
+      }
+
+      backPressTimeout.current = setTimeout(() => {
+        backPressCount.current = 0;
+      }, 2000) as unknown as number;
+
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    );
+
+    return () => {
+      subscription.remove();
+      if (backPressTimeout.current) {
+        clearTimeout(backPressTimeout.current);
+      }
+    };
+  }, []);
+  
   return (
     <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: COLORS.WHITE,
-          borderTopColor: COLORS.SECONDARY,
-          borderTopWidth: scale(1),
-          paddingBottom: scale(8),
-          paddingTop: scale(8),
-          height: scale(80),
-        },
-        tabBarActiveTintColor: COLORS.PRIMARY,
-        tabBarInactiveTintColor: COLORS.GRAY,
-        tabBarLabelStyle: {
-          fontSize: scaleFont(12),
-          fontWeight: '600',
-          fontFamily: 'varela_round_regular',
-        },
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: APP_NAVIGATION.HOME,
-          tabBarIcon: ({ color }) => (
-            <Text style={[styles.tabIcon, { color }]}>{ICONS.HOME}</Text>
-          ),
+          tabBarLabel: 'Home',
+        }}
+      />
+      <Tab.Screen
+        name="Resources"
+        component={ResourcesScreen}
+        options={{
+          tabBarLabel: 'Resources',
+        }}
+      />
+      <Tab.Screen
+        name="Journal"
+        component={JournalScreen}
+        options={{
+          tabBarLabel: 'Journal',
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: APP_NAVIGATION.PROFILE,
-          tabBarIcon: ({ color }) => (
-            <Text style={[styles.tabIcon, { color }]}>{ICONS.PROFILE}</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarLabel: APP_NAVIGATION.SETTINGS,
-          tabBarIcon: ({ color }) => (
-            <Text style={[styles.tabIcon, { color }]}>{ICONS.SETTINGS}</Text>
-          ),
+          tabBarLabel: 'Profile',
         }}
       />
     </Tab.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: scale(24),
-  },
-  screenTitle: {
-    fontSize: scaleFont(24),
-    fontWeight: 'bold',
-    color: COLORS.PRIMARY,
-    fontFamily: 'varela_round_regular',
-    marginBottom: scale(8),
-  },
-  screenText: {
-    fontSize: scaleFont(16),
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: 'varela_round_regular',
-    textAlign: 'center',
-  },
-  tabIcon: {
-    fontSize: scaleFont(24),
-    fontFamily: 'varela_round_regular',
-    marginBottom: scale(4),
-  },
-});
 
 export default AppNavigator;
