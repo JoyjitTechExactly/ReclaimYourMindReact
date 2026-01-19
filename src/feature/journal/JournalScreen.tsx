@@ -26,7 +26,7 @@ const JournalScreen: React.FC = () => {
   };
 
   const handleEditEntry = (entryId: string) => {
-    navigation.navigate('EditJournalEntry', { entryId });
+    navigation.navigate('JournalEntryDetail', { entryId, editMode: true });
   };
 
   const handleViewEntry = (entryId: string) => {
@@ -49,6 +49,10 @@ const JournalScreen: React.FC = () => {
 
   const handleViewReflection = (reflectionId: string) => {
     navigation.navigate('QAReflectionDetail', { reflectionId });
+  };
+
+  const handleEditReflection = (reflectionId: string) => {
+    navigation.navigate('QAReflectionDetail', { reflectionId, editMode: true });
   };
 
   const renderJournalEntry = ({ item }: { item: JournalEntry }) => {
@@ -153,7 +157,7 @@ const JournalScreen: React.FC = () => {
                     <TouchableOpacity
                       style={styles.menuItem}
                       onPress={() => {
-                        handleViewReflection(item.id);
+                        handleEditReflection(item.id);
                         setMenuVisible(null);
                       }}
                     >

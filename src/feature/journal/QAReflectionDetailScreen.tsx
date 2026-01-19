@@ -10,6 +10,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { sampleQAReflections, QAReflection } from '../../constants/constantData';
+import Toolbar from '../../components/common/Toolbar';
 
 type QAReflectionDetailRouteProp = RouteProp<AppStackParamList, 'QAReflectionDetail'>;
 type QAReflectionDetailNavigationProp = StackNavigationProp<AppStackParamList, 'QAReflectionDetail'>;
@@ -18,7 +19,7 @@ const QAReflectionDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<QAReflectionDetailNavigationProp>();
   const route = useRoute<QAReflectionDetailRouteProp>();
-  const { reflectionId } = route.params;
+  const { reflectionId, editMode } = route.params;
 
   const [reflection, setReflection] = useState<QAReflection | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -31,6 +32,12 @@ const QAReflectionDetailScreen: React.FC = () => {
       setEditedReflection(found.reflection);
     }
   }, [reflectionId]);
+
+  useEffect(() => {
+    if (editMode) {
+      setIsEditing(true);
+    }
+  }, [editMode]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -86,25 +93,13 @@ const QAReflectionDetailScreen: React.FC = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Image source={ImagePath.BackArrow} style={styles.backIcon} resizeMode="contain" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{JOURNAL.QA_REFLECTIONS}</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      {/* Content */}
-      <ImageBackground
-        source={ImagePath.ScreenBackground}
-        style={commonStyles.backgroundImage}
-      >
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={commonStyles.contentTransparent}>
+      <Toolbar title={JOURNAL.QA_REFLECTIONS}
+        onBackPress={handleBack}
+        bottomMargin={30}
+        backButtonColor={COLORS.PRIMARY} />
+      <View style={commonStyles.contentDefaultBackground}>
+        <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={commonStyles.contentDefaultBackground}>
             {/* Card 1: Entry Metadata */}
             <View style={styles.entryCard}>
               <View style={styles.metadataHeader}>
@@ -166,9 +161,10 @@ const QAReflectionDetailScreen: React.FC = () => {
                 <Text style={styles.reflectionText}>{reflection.reflection}</Text>
               )}
             </View>
+            <View style={commonStyles.mb60} />
           </View>
         </ScrollView>
-      </ImageBackground>
+      </View>
 
       {/* Action Buttons - Fixed at Bottom */}
       <View style={styles.actionButtonsContainer}>
@@ -179,7 +175,7 @@ const QAReflectionDetailScreen: React.FC = () => {
           <Text style={styles.deleteButtonText}>{JOURNAL.DELETE_ENTRY}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </View >
   );
 };
 

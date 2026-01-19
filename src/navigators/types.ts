@@ -15,9 +15,8 @@ export type AppStackParamList = {
   Resources: undefined;
   Journal: undefined;
   NewJournalEntry: undefined;
-  EditJournalEntry: { entryId: string };
-  JournalEntryDetail: { entryId: string };
-  QAReflectionDetail: { reflectionId: string };
+  JournalEntryDetail: { entryId: string; editMode?: boolean };
+  QAReflectionDetail: { reflectionId: string; editMode?: boolean };
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;

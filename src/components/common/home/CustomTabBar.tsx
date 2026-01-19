@@ -15,7 +15,6 @@ interface TabBarProps {
 // List of screens where tab bar should be hidden
 const HIDDEN_TAB_BAR_SCREENS = [
   'NewJournalEntry',
-  'EditJournalEntry',
   'JournalEntryDetail',
   'QAReflectionDetail',
   'EditProfile',
