@@ -17,4 +17,5 @@ export const COLORS = {
   CARD_LIGHT: '#F8F9FF',
   ICON_BG: '#F0F4FF',
   SHADOW: 'rgba(0, 0, 0, 0.05)',
+  PROGRESS_BAR: '#A5C7D0',
 } as const;

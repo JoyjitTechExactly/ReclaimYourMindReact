@@ -341,4 +341,50 @@ export const commonStyles = StyleSheet.create({
   pv14: {
     paddingVertical: scale(14),
   },
+
+  // Additional common styles for HomeScreen
+  cardShadow: {
+    shadowColor: COLORS.SHADOW,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  primaryButtonSmall: {
+    backgroundColor: COLORS.PRIMARY,
+    borderRadius: scale(8),
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(6),
+    justifyContent: 'center',
+  },
+  progressBar: {
+    height: scale(8),
+    backgroundColor: COLORS.BORDER_LIGHT,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.PROGRESS_BAR,
+    borderRadius: 4,
+  },
+  fixedHeader: {
+    height: scale(130),
+    backgroundColor: COLORS.WHITE,
+    paddingHorizontal: scale(24),
+    paddingTop: scale(20),
+    paddingBottom: scale(16),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER_HEADER,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    resizeMode: 'cover',
+    backgroundColor: COLORS.BACKGROUND,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: scale(24)
+  },
 });

@@ -161,3 +161,27 @@ export const ICONS = {
   PROFILE: '👤',
   SETTINGS: '⚙️',
 } as const;
+
+// Home Screen
+export const HOME = {
+  // Welcome Section
+  WELCOME_BACK: 'Welcome back,',
+  USER_NAME: 'Sarah 👋',
+  HEADER_SUBTITLE: 'Step by step, you\'re moving forward.',
+  
+  // Journey Overview
+  JOURNEY_OVERVIEW_TITLE: 'Your Empowerment Journey',
+  JOURNEY_OVERVIEW_SUBTITLE: 'Nothing here is rushed. Take your time.',
+  CONTINUE_WHERE_LEFT_OFF: 'Continue Where I Left Off',
+  
+  // Progress Section
+  OVERALL_PROGRESS: 'Overall Progress',
+  PROGRESS_SUBTITLE: 'Step by step, you\'re moving forward.',
+  
+  // Journey Steps
+  RESUME: 'Resume',
+  ITEMS: 'Items',
+  
+  // Accessibility
+  CONTINUE_JOURNEY: 'Continue your journey',
+} as const;

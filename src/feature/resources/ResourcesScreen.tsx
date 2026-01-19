@@ -1,17 +1,46 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
-import { APP_NAVIGATION } from '../../constants/strings';
+import { APP_NAVIGATION, HOME } from '../../constants/strings';
+import { commonStyles } from '../../styles/commonStyles';
+import { ImagePath } from '../../constants/imagePath';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const ResourcesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
+  const headerContent = (
+    <>
+      <Text style={[commonStyles.welcomeText, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
+      <Text style={[commonStyles.userName, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
+      <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>{HOME.HEADER_SUBTITLE}</Text>
+    </>
+  );
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>{APP_NAVIGATION.RESOURCES}</Text>
-      <Text style={styles.subtitle}>{APP_NAVIGATION.RESOURCES_DESCRIPTION}</Text>
+    <View>
+      {/* Fixed Header Section */}
+       <View style={[styles.container, { paddingTop: insets.top }]}>
+        {headerContent}
+      </View>
+
+      {/* Scrollable Content */}
+      <ImageBackground
+        source={ImagePath.ScreenBackground}
+        style={commonStyles.backgroundImage}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={commonStyles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={commonStyles.content}>
+            
+          </View>
+        </ScrollView>
+      </ImageBackground>
     </View>
   );
 };
@@ -19,21 +48,7 @@ const ResourcesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
-    paddingHorizontal: scale(24),
-  },
-  title: {
-    fontSize: scaleFont(24),
-    fontWeight: 'bold',
-    color: COLORS.PRIMARY,
-    fontFamily: 'varela_round_regular',
-    marginTop: scale(20),
-    marginBottom: scale(8),
-  },
-  subtitle: {
-    fontSize: scaleFont(16),
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: 'varela_round_regular',
+    backgroundColor: COLORS.WHITE,
   },
 });
 

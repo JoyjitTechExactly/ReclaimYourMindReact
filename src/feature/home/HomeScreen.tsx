@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/colors';
+import { HOME } from '../../constants/strings';
 import { homeJourneyStages } from '../../constants/constantData';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
@@ -27,7 +28,7 @@ const HomeScreen: React.FC = () => {
       return (
         <View style={styles.journeyStepRow}>
           {/* Left Icon */}
-          <View style={styles.journeyIconWrapper}>
+          <View style={styles.iconWrapper}>
             <Image source={item.icon} style={styles.journeyStepIcon} />
           </View>
 
@@ -42,7 +43,7 @@ const HomeScreen: React.FC = () => {
               <View style={styles.progressBarWrapper}>
                 <View
                   style={[
-                    styles.progressBarFill,
+                    commonStyles.progressBarFill,
                     {
                       width: `${(item.progress / item.total) * 100}%`,
                     },
@@ -51,26 +52,24 @@ const HomeScreen: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.journeyStepFooter}>
-              {item.total > 0 && (
-                <Text style={styles.journeyStepProgress}>
-                  {item.progress}/{item.total} Items
-                </Text>
-              )}
-
+            {item.total > 0 && (<View style={[commonStyles.spaceBetween, { flexDirection: 'row' }]}>
+              {/* Resume Button */}
               <TouchableOpacity style={styles.resumeButton}>
-                <Text style={styles.resumeButtonText}>Resume</Text>
+                <Text style={styles.resumeButtonText}>{HOME.RESUME}</Text>
               </TouchableOpacity>
-            </View>
+
+              {/* Progress Text */}
+              <Text style={[commonStyles.textTiny, { color: COLORS.TEXT_LIGHT }]}>
+                {item.progress}/{item.total} {HOME.ITEMS}
+              </Text>
+            </View>)}
           </View>
         </View>
       );
     };
 
     return (
-      <View style={styles.journeyStepsContainer}>
-        <Text style={styles.journeyStepsTitle}>Journey Steps</Text>
-
+      <View style={{ marginTop: scale(24) }}>
         <FlatList
           data={homeJourneyStages}
           keyExtractor={(item) => item.id.toString()}
@@ -84,39 +83,39 @@ const HomeScreen: React.FC = () => {
 
   const headerContent = (
     <>
-      <Text style={[commonStyles.welcomeText, { color: COLORS.SECONDARY }]}>Welcome back,</Text>
-      <Text style={[commonStyles.userName, { color: COLORS.PRIMARY }]}>Sarah 👋</Text>
-      <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>Step by step, you're moving forward.</Text>
+      <Text style={[commonStyles.welcomeText, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
+      <Text style={[commonStyles.userName, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
+      <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>{HOME.HEADER_SUBTITLE}</Text>
     </>
   );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Fixed Header Section */}
-      <View style={styles.fixedHeader}>
+      <View style={commonStyles.fixedHeader}>
         {headerContent}
       </View>
 
       {/* Scrollable Content */}
-      <ImageBackground 
-        source={ImagePath.ScreenBackground} 
-        style={styles.backgroundImage}
+      <ImageBackground
+        source={ImagePath.ScreenBackground}
+        style={commonStyles.backgroundImage}
       >
         <ScrollView
-          style={{flex: 1}}
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={commonStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={commonStyles.content}>
             {/* Journey Overview Card */}
             <View>
-              <Text style={styles.journeyOverviewTitle}>Your Empowerment Journey</Text>
-              <Text style={styles.journeyOverviewSubtitle}>Nothing here is rushed. Take your time.</Text>
+              <Text style={styles.journeyOverviewTitle}>{HOME.JOURNEY_OVERVIEW_TITLE}</Text>
+              <Text style={styles.journeyOverviewSubtitle}>{HOME.JOURNEY_OVERVIEW_SUBTITLE}</Text>
 
               <TouchableOpacity style={styles.continueButton}>
                 <View style={styles.continueButtonContent}>
-                  <Image source={ImagePath.ContinueWhereILeftOff} style={{width: scale(24), height: scale(24), objectFit: 'contain'}}/>
-                  <Text style={styles.continueButtonText}>Continue Where I Left Off</Text>
+                  <Image source={ImagePath.ContinueWhereILeftOff} style={{ width: scale(24), height: scale(24), objectFit: 'contain' }} />
+                  <Text style={styles.continueButtonText}>{HOME.CONTINUE_WHERE_LEFT_OFF}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -127,17 +126,17 @@ const HomeScreen: React.FC = () => {
             {/* Overall Progress Section */}
             <View style={[styles.section, styles.overallProgress]}>
               <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>Overall Progress</Text>
+                <Text style={styles.progressTitle}>{HOME.OVERALL_PROGRESS}</Text>
                 <Text style={styles.progressPercent}>{Math.round(overallProgress * 100)}%</Text>
               </View>
 
               {renderProgressBar(overallProgress)}
 
-              <Text style={styles.progressSubtitle}>Step by step, you're moving forward.</Text>
+              <Text style={styles.progressSubtitle}>{HOME.PROGRESS_SUBTITLE}</Text>
+            </View>
           </View>
-        </View>
-          </ScrollView>
-        </ImageBackground>
+        </ScrollView>
+      </ImageBackground>
     </View>
   );
 };
@@ -147,32 +146,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
   },
-  fixedHeader: {
-    backgroundColor: COLORS.WHITE,   
-    paddingHorizontal: scale(24),
-    paddingTop: scale(20),
-    paddingBottom: scale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER_HEADER,
-  },
   headerSection: {
     marginBottom: scale(32),
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: scale(24)
   },
   section: {
     marginTop: scale(24),
     marginBottom: scale(24),
+    ...commonStyles.cardShadow,
     backgroundColor: COLORS.WHITE,
     borderRadius: 16,
     padding: scale(16),
-    shadowColor: COLORS.SHADOW,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   journeyOverviewCard: {
     backgroundColor: COLORS.CARD_LIGHT,
@@ -306,13 +289,15 @@ const styles = StyleSheet.create({
     fontFamily: 'varela_round_regular',
   },
   resumeButton: {
+    height: scale(32),
     backgroundColor: COLORS.PRIMARY,
     paddingHorizontal: scale(16),
     paddingVertical: scale(6),
-    borderRadius: 16,
+    borderRadius: scale(8),
   },
   resumeButtonText: {
     color: COLORS.WHITE,
+    textAlign: 'center',
     fontSize: scaleFont(12),
     fontWeight: '600',
     fontFamily: 'varela_round_regular',
@@ -320,6 +305,7 @@ const styles = StyleSheet.create({
   overallProgress: {
     backgroundColor: COLORS.WHITE,
     marginBottom: scale(120),
+    borderRadius: scale(8),
   },
   progressHeader: {
     flexDirection: 'row',
@@ -340,16 +326,11 @@ const styles = StyleSheet.create({
     fontFamily: 'varela_round_regular',
   },
   progressBarContainer: {
-    height: scale(8),
-    backgroundColor: COLORS.BORDER_LIGHT,
-    borderRadius: 4,
+    ...commonStyles.progressBar,
     marginBottom: scale(8),
-    overflow: 'hidden',
   },
   progressBar: {
-    height: '100%',
-    backgroundColor: COLORS.PRIMARY,
-    borderRadius: 4,
+    ...commonStyles.progressBarFill,
   },
   progressSubtitle: {
     fontSize: scaleFont(12),
@@ -357,16 +338,7 @@ const styles = StyleSheet.create({
     marginBottom: scale(4),
     fontFamily: 'varela_round_regular',
   },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    resizeMode: 'cover',
-    backgroundColor: COLORS.BACKGROUND,
-  },
   // Journey Steps Styles
-  journeyStepsContainer: {
-    marginTop: scale(24),
-  },
   journeyStepsTitle: {
     fontSize: scaleFont(18),
     fontWeight: '600',
@@ -378,15 +350,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.WHITE,
     borderRadius: scale(16),
     padding: scale(16),
-    marginBottom: scale(16),
     shadowColor: COLORS.SHADOW,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 2,
-  },
-  journeyStepContent: {
-    gap: scale(16),
+    flex: 1,
   },
   journeyStepHeader: {
     flexDirection: 'row',
@@ -402,17 +371,14 @@ const styles = StyleSheet.create({
     marginRight: scale(16),
   },
   journeyStepIcon: {
-    width: scale(24),
-    height: scale(24),
+    width: scale(42),
+    height: scale(42),
     resizeMode: 'contain',
-  },
-  journeyStepInfo: {
-    flex: 1,
   },
   journeyStepTitle: {
     fontSize: scaleFont(16),
     fontWeight: '600',
-    color: COLORS.TEXT_DARK,
+    color: COLORS.PRIMARY,
     fontFamily: 'varela_round_regular',
     marginBottom: scale(4),
   },
@@ -422,31 +388,21 @@ const styles = StyleSheet.create({
     fontFamily: 'varela_round_regular',
     lineHeight: scaleFont(20),
   },
-  journeyStepFooter: {
-    marginBottom: scale(60),
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  journeyStepProgress: {
-    fontSize: scaleFont(12),
-    color: COLORS.TEXT_LIGHT,
-    fontFamily: 'varela_round_regular',
-  },
   // New FlatList Journey Steps Styles
-  journeyStepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: scale(16),
-  },
-  journeyIconWrapper: {
+  iconWrapper: {
     width: scale(48),
     height: scale(48),
     borderRadius: scale(24),
-    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: scale(16),
+    backgroundColor: 'transparent',
+  },
+  journeyStepRow: {
+    width: '100%',
+    ...commonStyles.row,
+    alignItems: 'center',
+    marginBottom: scale(12),
   },
   progressBarWrapper: {
     height: scale(4),
@@ -454,13 +410,8 @@ const styles = StyleSheet.create({
     borderRadius: scale(2),
     marginVertical: scale(12),
   },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: COLORS.PRIMARY,
-    borderRadius: scale(2),
-  },
   journeyStepsList: {
-    paddingBottom: scale(20),
+    paddingBottom: scale(16),
   },
 });
 
