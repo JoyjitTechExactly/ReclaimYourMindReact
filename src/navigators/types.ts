@@ -20,7 +20,6 @@ export type AppStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
-  Settings: undefined;
 };
 
 export type RootStackParamList = {

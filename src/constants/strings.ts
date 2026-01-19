@@ -124,12 +124,10 @@ export const APP_NAVIGATION = {
   RESOURCES: 'Resources',
   JOURNAL: 'Journal',
   PROFILE: 'Profile',
-  SETTINGS: 'Settings',
   HOME_WELCOME: 'Welcome to your safe space',
   RESOURCES_DESCRIPTION: 'Access helpful resources and tools',
   JOURNAL_DESCRIPTION: 'Document your thoughts and progress',
   PROFILE_DESCRIPTION: 'Manage your profile',
-  SETTINGS_DESCRIPTION: 'App settings and preferences',
 } as const;
 
 // Auth Navigation
@@ -159,7 +157,6 @@ export const ICONS = {
   RESOURCES: '📚',
   JOURNAL: '📔',
   PROFILE: '👤',
-  SETTINGS: '⚙️',
 } as const;
 
 // Home Screen
