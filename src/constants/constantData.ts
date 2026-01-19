@@ -67,3 +67,79 @@ export const homeJourneyStages = [
     icon: ImagePath.Journey4
   }
 ];
+
+// Resources Data
+export interface CrisisHotline {
+  id: string;
+  name: string;
+  phone: string;
+  textNumber?: string;
+  textKeyword?: string;
+}
+
+export interface BookArticle {
+  id: string;
+  title: string;
+  author: string;
+  type: 'Book' | 'Article';
+  url?: string;
+}
+
+export interface WebsiteReferral {
+  id: string;
+  name: string;
+  website: string;
+  type: 'Organization' | 'Legal Help' | 'Support Group';
+  url: string;
+}
+
+export const crisisHotlines: CrisisHotline[] = [
+  {
+    id: '1',
+    name: 'National Domestic Violence Hotline',
+    phone: '1-800-799-7233',
+    textNumber: '88788',
+    textKeyword: 'START',
+  },
+  {
+    id: '2',
+    name: 'National Domestic Violence Hotline',
+    phone: '1-800-799-7233',
+    textNumber: '88788',
+    textKeyword: 'START',
+  },
+];
+
+export const booksArticles: BookArticle[] = [
+  {
+    id: '1',
+    title: 'Why Does He Do That?',
+    author: 'Lundy Bancroft',
+    type: 'Book',
+    url: 'https://example.com/book1',
+  },
+  {
+    id: '2',
+    title: 'Recognizing Emotional Abuse',
+    author: 'National Coalition Against DV',
+    type: 'Article',
+    url: 'https://example.com/article1',
+  },
+];
+
+export const websitesReferrals: WebsiteReferral[] = [
+  {
+    id: '1',
+    name: 'National Coalition Against DV',
+    website: 'ncadv.org',
+    type: 'Organization',
+    url: 'https://ncadv.org',
+  },
+  {
+    id: '2',
+    name: 'Legal Aid Society',
+    website: 'legalaid.org',
+    type: 'Legal Help',
+    url: 'https://legalaid.org',
+  },
+];

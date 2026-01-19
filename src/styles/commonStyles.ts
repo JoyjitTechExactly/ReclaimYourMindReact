@@ -29,22 +29,22 @@ export const commonStyles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  welcomeText: {
+  headerWeclomeNote: {
     fontSize: scaleFont(16),
     color: '#666666',
     fontFamily: 'varela_round_regular',
     marginBottom: scale(2),
   },
-  userName: {
+  headerTitle: {
     fontSize: scaleFont(28),
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.TEXT_PRIMARY,
     fontFamily: 'varela_round_regular',
     marginBottom: scale(4),
   },
   headerSubtitle: {
     fontSize: scaleFont(14),
-    color: '#888888',
+    color: COLORS.TEXT_MUTED,
     fontFamily: 'varela_round_regular',
     lineHeight: scaleFont(20),
   },

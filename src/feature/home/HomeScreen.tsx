@@ -83,8 +83,8 @@ const HomeScreen: React.FC = () => {
 
   const headerContent = (
     <>
-      <Text style={[commonStyles.welcomeText, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
-      <Text style={[commonStyles.userName, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
+      <Text style={[commonStyles.headerWeclomeNote, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
+      <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
       <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>{HOME.HEADER_SUBTITLE}</Text>
     </>
   );

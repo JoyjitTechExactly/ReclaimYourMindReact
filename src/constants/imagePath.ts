@@ -15,9 +15,16 @@ export const ImagePath = {
   ResourcesIcon: require("../assets/icResources.png"),
   ProfileIcon: require("../assets/icProfile.png"),
   ContinueWhereILeftOff: require("../assets/icPlay.png"),
+  
   // Journey Steps Icons
   Journey1: require("../assets/journey1.png"),
   Journey2: require("../assets/journey2.png"),
   Journey3: require("../assets/journey3.png"),
   Journey4: require("../assets/journey4.png"),
+
+  // Resources Icons
+  CallIcon: require("../assets/icCall.png"),
+  BooksArticlesIcon: require("../assets/icBook.png"),
+  WebsitesReferralsIcon: require("../assets/icWeb.png"),
+  ChatIcon: require("../assets/icChat.png"),
 } as const;

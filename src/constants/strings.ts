@@ -185,3 +185,17 @@ export const HOME = {
   // Accessibility
   CONTINUE_JOURNEY: 'Continue your journey',
 } as const;
+
+// Resources Screen
+export const RESOURCES = {
+  TITLE: 'Support',
+  SUBTITLE: 'Help and resources, whenever you need them.',
+  CRISIS_HOTLINES: 'Crisis Hotlines (24/7)',
+  BOOKS_ARTICLES: 'Books & Articles',
+  WEBSITES_REFERRALS: 'Websites & Referrals',
+  TEXT: 'Text',
+  CALL: 'Call',
+  OPEN_RESOURCE: 'Open Resource',
+  VISIT_WEBSITE: 'Visit Website',
+  BY: 'By',
+} as const;

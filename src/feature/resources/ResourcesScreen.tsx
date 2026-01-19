@@ -1,28 +1,128 @@
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, Linking, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
-import { APP_NAVIGATION, HOME } from '../../constants/strings';
+import { APP_NAVIGATION, HOME, RESOURCES } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
-import { ScrollView } from 'react-native-gesture-handler';
+import { crisisHotlines, booksArticles, websitesReferrals, CrisisHotline, BookArticle, WebsiteReferral } from '../../constants/constantData';
 
 const ResourcesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const headerContent = (
     <>
-      <Text style={[commonStyles.welcomeText, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
-      <Text style={[commonStyles.userName, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
-      <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>{HOME.HEADER_SUBTITLE}</Text>
+      <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY}]}>{RESOURCES.TITLE}</Text>
+      <Text style={commonStyles.headerSubtitle}>{RESOURCES.SUBTITLE}</Text>   
     </>
   );
 
+  const handleCall = (phone: string) => {
+    Linking.openURL(`tel:${phone}`);
+  };
+
+  const handleText = (textNumber: string, keyword?: string) => {
+    const message = keyword ? keyword : '';
+    Linking.openURL(`sms:${textNumber}${message ? `&body=${message}` : ''}`);
+  };
+
+  const handleOpenResource = (url?: string) => {
+    if (url) {
+      Linking.openURL(url);
+    }
+  };
+
+  const handleVisitWebsite = (url: string) => {
+    Linking.openURL(url);
+  };
+
+  const renderCrisisHotlineCard = (hotline: CrisisHotline) => (
+    <View key={hotline.id} style={styles.resourceCard}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardTitleContainer}>
+          <Text style={styles.cardTitle} numberOfLines={2}>{hotline.name}</Text>
+        </View>
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>24/7</Text>
+        </View>
+      </View>
+      <View style={styles.hotlineButtons}>
+        {hotline.textNumber && (
+          <TouchableOpacity
+            style={styles.textButton}
+            onPress={() => handleText(hotline.textNumber!, hotline.textKeyword)}
+          >
+            <Image source={ImagePath.ChatIcon} style={styles.textButtonIcon} resizeMode="contain" />
+            <Text style={styles.textButtonText}>{RESOURCES.TEXT}</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.callButton}
+          onPress={() => handleCall(hotline.phone)}
+        >
+          <Image source={ImagePath.CallIcon} style={styles.callButtonIcon} resizeMode="contain" />
+          <Text style={styles.callButtonText}>{RESOURCES.CALL}</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.hotlineInfo}>
+        {hotline.phone}
+        {hotline.textNumber && ` - Text ${hotline.textKeyword || 'START'} to ${hotline.textNumber}`}
+      </Text>
+    </View>
+  );
+
+  const renderBookArticleCard = (item: BookArticle) => (
+    <View key={item.id} style={styles.resourceCard}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{item.title}</Text>
+          <Text style={styles.cardAuthor}>{RESOURCES.BY} {item.author}</Text>
+        </View>
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>{item.type}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => handleOpenResource(item.url)}
+      >
+        <Text style={styles.primaryButtonText}>{RESOURCES.OPEN_RESOURCE}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderWebsiteCard = (item: WebsiteReferral) => (
+    <View key={item.id} style={styles.resourceCard}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <Text style={styles.cardWebsite}>{item.website}</Text>
+        </View>
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>{item.type}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => handleVisitWebsite(item.url)}
+      >
+        <Text style={styles.primaryButtonText}>{RESOURCES.VISIT_WEBSITE}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderSectionHeader = (iconSource: any, title: string) => (
+    <View style={styles.sectionHeader}>
+      <Image source={iconSource} style={styles.sectionIcon} resizeMode="contain" />
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+
   return (
-    <View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Fixed Header Section */}
-       <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[commonStyles.fixedHeader, { paddingTop: scale(40)}]}>
         {headerContent}
       </View>
 
@@ -37,7 +137,18 @@ const ResourcesScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={commonStyles.content}>
-            
+            {/* Crisis Hotlines Section */}
+            {renderSectionHeader(ImagePath.CallIcon, RESOURCES.CRISIS_HOTLINES)}
+            {crisisHotlines.map(renderCrisisHotlineCard)}
+
+            {/* Books & Articles Section */}
+            {renderSectionHeader(ImagePath.BooksArticlesIcon, RESOURCES.BOOKS_ARTICLES)}
+            {booksArticles.map(renderBookArticleCard)}
+
+            {/* Websites & Referrals Section */}
+            {renderSectionHeader(ImagePath.WebsitesReferralsIcon, RESOURCES.WEBSITES_REFERRALS)}
+            {websitesReferrals.map(renderWebsiteCard)}
+            <View style={{ marginBottom: scale(120) }} />
           </View>
         </ScrollView>
       </ImageBackground>
@@ -49,6 +160,167 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.WHITE,
+  },
+  pageHeader: {
+    marginBottom: scale(32),
+  },
+  pageTitle: {
+    fontSize: scaleFont(32),
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
+    fontFamily: 'varela_round_regular',
+    marginBottom: scale(8),
+  },
+  pageSubtitle: {
+    fontSize: scaleFont(16),
+    color: COLORS.TEXT_MUTED,
+    fontFamily: 'varela_round_regular',
+    lineHeight: scaleFont(22),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: scale(32),
+    marginBottom: scale(16),
+  },
+  sectionIcon: {
+    width: scale(24),
+    height: scale(24),
+    marginRight: scale(12),
+    tintColor: COLORS.PRIMARY,
+  },
+  sectionTitle: {
+    fontSize: scaleFont(18),
+    fontWeight: '600',
+    color: COLORS.PRIMARY,
+    fontFamily: 'varela_round_regular',
+  },
+  resourceCard: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: scale(16),
+    padding: scale(16),
+    marginBottom: scale(16),
+    overflow: 'hidden',
+    ...commonStyles.cardShadow,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: scale(16),
+    width: '100%',
+  },
+  cardTitleContainer: {
+    flex: 1,
+    marginRight: scale(12),
+    minWidth: 0,
+    flexShrink: 1,
+  },
+  cardContent: {
+    flex: 1,
+    marginRight: scale(12),
+    minWidth: 0,
+  },
+  cardTitle: {
+    fontSize: scaleFont(16),
+    fontWeight: '600',
+    color: COLORS.PRIMARY,
+    fontFamily: 'varela_round_regular',
+    marginBottom: scale(4),
+    flexShrink: 1,
+  },
+  cardAuthor: {
+    fontSize: scaleFont(14),
+    color: COLORS.TEXT_MUTED,
+    fontFamily: 'varela_round_regular',
+  },
+  cardWebsite: {
+    fontSize: scaleFont(14),
+    color: COLORS.TEXT_MUTED,
+    fontFamily: 'varela_round_regular',
+  },
+  tag: {
+    backgroundColor: COLORS.SECONDARY,
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(4),
+    borderRadius: scale(12),
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    marginLeft: 'auto',
+  },
+  tagText: {
+    fontSize: scaleFont(12),
+    fontWeight: '400',
+    color: COLORS.PRIMARY,
+    fontFamily: 'varela_round_regular',
+  },
+  hotlineButtons: {
+    flexDirection: 'row',
+    marginBottom: scale(12),
+  },
+  textButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.SECONDARY,
+    borderRadius: scale(12),
+    paddingVertical: scale(12),
+    paddingHorizontal: scale(16),
+    marginRight: scale(12),
+  },
+  textButtonIcon: {
+    width: scale(16),
+    height: scale(16),
+    marginRight: scale(6),
+    tintColor: COLORS.PRIMARY,
+  },
+  textButtonText: {
+    fontSize: scaleFont(14),
+    fontWeight: '600',
+    color: COLORS.PRIMARY,
+    fontFamily: 'varela_round_regular',
+  },
+  callButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.PRIMARY,
+    borderRadius: scale(12),
+    paddingVertical: scale(12),
+    paddingHorizontal: scale(16),
+  },
+  callButtonIcon: {
+    width: scale(16),
+    height: scale(16),
+    marginRight: scale(6),
+    tintColor: COLORS.WHITE,
+  },
+  callButtonText: {
+    fontSize: scaleFont(14),
+    fontWeight: '600',
+    color: COLORS.WHITE,
+    fontFamily: 'varela_round_regular',
+  },
+  hotlineInfo: {
+    fontSize: scaleFont(14),
+    color: COLORS.TEXT_MUTED,
+    fontFamily: 'varela_round_regular',
+    lineHeight: scaleFont(20),
+  },
+  primaryButton: {
+    backgroundColor: COLORS.PRIMARY,
+    borderRadius: scale(12),
+    paddingVertical: scale(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    fontSize: scaleFont(16),
+    fontWeight: '600',
+    color: COLORS.WHITE,
+    fontFamily: 'varela_round_regular',
   },
 });
 
