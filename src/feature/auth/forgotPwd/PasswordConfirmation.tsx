@@ -39,7 +39,7 @@ const PasswordConfirmation: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
-        <View style={[commonStyles.content, { paddingBottom: scale(60) }]}>
+        <View style={[commonStyles.contentTransparent, { paddingBottom: scale(60) }]}>
           <View style={styles.contentCentered}>
             {/* Success Icon */}
             <Image

@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
 
@@ -22,6 +22,8 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
   textStyle,
   fullWidth = true,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const buttonStyle = [
     styles.button,
     variant === 'primary' ? styles.primaryButton : 
@@ -31,6 +33,7 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
     styles.primaryButton,
     disabled && styles.disabledButton,
     fullWidth && styles.fullWidth,
+    isHovered && !disabled && styles.hovered,
     style,
   ];
 
@@ -46,14 +49,18 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
   ];
 
   return (
-    <TouchableOpacity
-      style={buttonStyle}
+    <Pressable
+      style={({ pressed }) => [
+        ...buttonStyle,
+        pressed && !disabled && styles.pressed,
+      ]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={disabled ? 0.5 : 1}
+      onHoverIn={() => !disabled && setIsHovered(true)}
+      onHoverOut={() => setIsHovered(false)}
     >
       <Text style={buttonTextStyle}>{title}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -86,6 +93,22 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: COLORS.GRAY,
     borderColor: COLORS.GRAY,
+  },
+  hovered: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.96 }],
   },
   fullWidth: {
     width: '100%',

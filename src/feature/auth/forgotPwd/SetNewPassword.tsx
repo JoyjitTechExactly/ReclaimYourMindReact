@@ -89,7 +89,7 @@ const SetNewPassword: React.FC = () => {
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
       <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={[commonStyles.content, { paddingBottom: scale(60) }]}>
+        <View style={[commonStyles.contentTransparent, { paddingBottom: scale(60) }]}>
           {/* Back Arrow */}
           <BackButton onPress={handleBack} />
 

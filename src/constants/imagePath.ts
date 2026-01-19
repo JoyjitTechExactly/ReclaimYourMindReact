@@ -15,7 +15,20 @@ export const ImagePath = {
   ResourcesIcon: require("../assets/icResources.png"),
   ProfileIcon: require("../assets/icProfile.png"),
   ContinueWhereILeftOff: require("../assets/icPlay.png"),
-  
+  EditIcon: require("../assets/icEdit.png"),
+  DeleteIcon: require("../assets/icDelete.png"),
+  DownloadIcon: require("../assets/icDownload.png"),
+  MoreIcon: require("../assets/icMore.png"),
+  LockIcon: require("../assets/icLock.png"),
+  LogoutIcon: require("../assets/icLogout.png"),
+  DeleteAccountIcon: require("../assets/icDeleteAccount.png"),
+  PrivacyPolicyIcon: require("../assets/icPrivacy.png"),
+  DocumentIcon: require("../assets/icDocument.png"),
+  RightArrow: require("../assets/icRightArrow.png"),
+  RedirectIcon: require("../assets/icRedirect.png"),
+  KeyIcon: require("../assets/icKey.png"),
+
+
   // Journey Steps Icons
   Journey1: require("../assets/journey1.png"),
   Journey2: require("../assets/journey2.png"),

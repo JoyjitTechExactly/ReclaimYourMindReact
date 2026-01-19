@@ -4,8 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; import
 import { AppStackParamList } from './types';
 import HomeScreen from '../feature/home/HomeScreen';
 import ResourcesScreen from '../feature/resources/ResourcesScreen';
-import JournalScreen from '../feature/journal/JournalScreen';
-import ProfileScreen from '../feature/profile/ProfileScreen';
+import JournalNavigator from './JournalNavigator';
+import ProfileNavigator from './ProfileNavigator';
 import CustomTabBar from '../components/common/home/CustomTabBar';
 import Toast from 'react-native-toast-message';
 
@@ -80,14 +80,14 @@ const AppNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="Journal"
-        component={JournalScreen}
+        component={JournalNavigator}
         options={{
           tabBarLabel: 'Journal',
         }}
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileNavigator}
         options={{
           tabBarLabel: 'Profile',
         }}

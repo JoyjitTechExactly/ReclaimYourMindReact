@@ -9,10 +9,16 @@ export const commonStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
   },
-  content: {
+  contentTransparent: {
     flex: 1,
     paddingHorizontal: scale(24),
+  },
+  contentDefaultBackground: {
+    flex: 1,
+    paddingHorizontal: scale(24),
+    backgroundColor: COLORS.BACKGROUND,
     paddingTop: scale(20),
+    paddingBottom: scale(60),
   },
   contentCentered: {
     flex: 1,
@@ -103,7 +109,7 @@ export const commonStyles = StyleSheet.create({
   },
   subtitleGrey: {
     fontSize: scaleFont(14),
-     color: COLORS.TEXT_SECONDARY,
+    color: COLORS.TEXT_SECONDARY,
     fontFamily: 'varela_round_regular',
     marginTop: scale(6),
   },

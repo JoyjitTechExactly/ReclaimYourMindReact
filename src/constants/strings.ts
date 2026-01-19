@@ -199,3 +199,59 @@ export const RESOURCES = {
   VISIT_WEBSITE: 'Visit Website',
   BY: 'By',
 } as const;
+
+// Journal Screen
+export const JOURNAL = {
+  TITLE: 'My Journal',
+  JOURNAL_ENTRIES: 'Journal Entries',
+  QA_REFLECTIONS: 'Q&A Reflections',
+  NO_ENTRIES_YET: 'No journal entries yet. Start writing to add one.',
+  NO_REFLECTIONS_YET: 'No reflections yet. They\'ll appear here as you answer questions on your healing journey.',
+  WRITE_THOUGHTS: 'Write your thoughts here... Use this space to reflect, release, and reconnect with yourself.',
+  SAVE_ENTRY: 'Save Entry',
+  PRIVACY_DISCLAIMER: 'Your journal is private. Only you can see what you write here.',
+  FOCUS_OF_ADVICE: 'Focus of Advice',
+  REFLECTION_QUESTIONS: 'Reflection Questions',
+  YOUR_REFLECTION: 'Your Reflection',
+  DOWNLOAD_PDF: 'Download PDF',
+  DELETE_ENTRY: 'Delete Entry',
+  EDIT: 'Edit',
+  DELETE: 'Delete',
+  DOWNLOAD: 'Download',
+  PRIVACY_MESSAGE: 'This space is yours alone',
+  PRIVACY_SUBTITLE: 'Saved securely, only visible to you',
+} as const;
+
+// Profile Screen
+export const PROFILE = {
+  EDIT_PROFILE: 'Edit Profile',
+  CHANGE_PASSWORD: 'Change Password',
+  LOGOUT: 'Logout',
+  DELETE_ACCOUNT: 'Delete Account',
+  DELETE_ACCOUNT_SUBTITLE: "Before deactivating, you'll be offered to export your journals.",
+  PRIVACY_POLICY: 'Privacy Policy',
+  TERMS_AND_CONDITION: 'Terms and condition',
+  ALLOW_NOTIFICATIONS: 'Allow notifications',
+  NOTIFICATIONS_SUBTITLE: "You're in control. Notification previews are hidden by default to protect your privacy.",
+  ACCOUNT: 'Account',
+  PRIVACY_DATA: 'Privacy & Data',
+  CURRENT_PASSWORD: 'Current Password',
+  NEW_PASSWORD: 'New Password',
+  CONFIRM_NEW_PASSWORD: 'Confirm New Password',
+  SAVE_NEW_PASSWORD: 'Save New Password',
+  INCORRECT_CURRENT_PASSWORD: 'Incorrect current password',
+  DELETE_ACCOUNT_WARNING: 'Deleting your account will permanently erase all journals, progress, and personal data. This cannot be undone. Consider exporting your journals first.',
+  EXPORT_JOURNALS: 'Export Journals',
+  CANCEL: 'Cancel',
+  // User Info
+  DEFAULT_USER_NAME: 'Sarah Johnson',
+  DEFAULT_USER_EMAIL: 'sarah.johnson@email.com',
+  // Alert Messages
+  LOGOUT_TITLE: 'Logout',
+  LOGOUT_MESSAGE: 'Are you sure you want to logout?',
+  EXPORT_JOURNALS_TITLE: 'Export Journals',
+  EXPORT_JOURNALS_MESSAGE: 'Journal export functionality will be implemented here.',
+  ERROR_TITLE: 'Error',
+  PRIVACY_POLICY_ERROR: 'Could not open privacy policy link.',
+  TERMS_ERROR: 'Could not open terms and condition link.',
+} as const;

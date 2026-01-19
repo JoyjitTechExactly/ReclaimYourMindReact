@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { COLORS } from '../../constants/colors';
 import { PASSWORD_INPUT, ICONS } from '../../constants/strings';
+import { ImagePath } from '../../constants/imagePath';
+import { commonStyles } from '../../styles/commonStyles';
 
 interface PasswordInputProps {
   label: string;
@@ -55,7 +57,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Text style={styles.eyeIconText}>{showPassword ? ICONS.EYE_OPEN : ICONS.EYE_CLOSED}</Text>
+          <Image source={showPassword ? ImagePath.EyeOpen : ImagePath.EyeClosed} style={commonStyles.smallIcon} resizeMode="contain" />
         </TouchableOpacity>
       </View>
       {error && <Text style={styles.errorText}>{error}</Text>}

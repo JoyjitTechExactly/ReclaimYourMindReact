@@ -106,7 +106,7 @@ const HomeScreen: React.FC = () => {
           contentContainerStyle={commonStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={commonStyles.content}>
+          <View style={commonStyles.contentTransparent}>
             {/* Journey Overview Card */}
             <View>
               <Text style={styles.journeyOverviewTitle}>{HOME.JOURNEY_OVERVIEW_TITLE}</Text>

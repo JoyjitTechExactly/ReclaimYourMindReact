@@ -14,6 +14,7 @@ const RootNavigator: React.FC = () => {
 
   return (
     <Stack.Navigator
+      key={isAuthenticated ? 'App' : 'Auth'}
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,

@@ -62,7 +62,7 @@ const SignIn: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
-      <View style={commonStyles.content}>
+      <View style={commonStyles.contentTransparent}>
         {/* Back Arrow */}
         <BackButton onPress={handleBack} />
 

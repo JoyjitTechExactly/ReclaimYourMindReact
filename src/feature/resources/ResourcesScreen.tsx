@@ -7,6 +7,7 @@ import { APP_NAVIGATION, HOME, RESOURCES } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { crisisHotlines, booksArticles, websitesReferrals, CrisisHotline, BookArticle, WebsiteReferral } from '../../constants/constantData';
+import CustomButton from '../../components/common/CustomButton';
 
 const ResourcesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -37,40 +38,77 @@ const ResourcesScreen: React.FC = () => {
     Linking.openURL(url);
   };
 
-  const renderCrisisHotlineCard = (hotline: CrisisHotline) => (
-    <View key={hotline.id} style={styles.resourceCard}>
-      <View style={styles.cardHeader}>
-        <View style={styles.cardTitleContainer}>
-          <Text style={styles.cardTitle} numberOfLines={2}>{hotline.name}</Text>
+  const renderCrisisHotlineCard = (hotline: CrisisHotline) => {
+    const hasText = !!hotline.textNumber;
+    const hasCall = !!hotline.phone;
+    const hasBothButtons = hasText && hasCall;
+    const hasOnlyOneButton = (hasText && !hasCall) || (!hasText && hasCall);
+
+    return (
+      <View key={hotline.id} style={styles.resourceCard}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.cardTitle} numberOfLines={2}>{hotline.name}</Text>
+          </View>
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>24/7</Text>
+          </View>
         </View>
-        <View style={styles.tag}>
-          <Text style={styles.tagText}>24/7</Text>
+        <View style={styles.hotlineButtons}>
+          {hasText && (
+            <TouchableOpacity
+              style={[
+                styles.textButton,
+                hasOnlyOneButton && styles.fullWidthButton,
+                hasOnlyOneButton && { marginRight: 0 }
+              ]}
+              onPress={() => handleText(hotline.textNumber!, hotline.textKeyword)}
+            >
+              <Image source={ImagePath.ChatIcon} style={styles.textButtonIcon} resizeMode="contain" />
+              <Text style={styles.textButtonText}>{RESOURCES.TEXT}</Text>
+            </TouchableOpacity>
+          )}
+          {hasCall && (
+            <TouchableOpacity
+              style={[
+                styles.callButton,
+                hasOnlyOneButton && styles.fullWidthButton
+              ]}
+              onPress={() => handleCall(hotline.phone!)}
+            >
+              <Image source={ImagePath.CallIcon} style={styles.callButtonIcon} resizeMode="contain" />
+              <Text style={styles.callButtonText}>{RESOURCES.CALL}</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      </View>
-      <View style={styles.hotlineButtons}>
-        {hotline.textNumber && (
-          <TouchableOpacity
-            style={styles.textButton}
-            onPress={() => handleText(hotline.textNumber!, hotline.textKeyword)}
-          >
-            <Image source={ImagePath.ChatIcon} style={styles.textButtonIcon} resizeMode="contain" />
-            <Text style={styles.textButtonText}>{RESOURCES.TEXT}</Text>
-          </TouchableOpacity>
+        {hotline.contactInfo ? (
+          <View style={styles.contactInfoContainer}>
+            <Text style={styles.hotlineInfo}>{hotline.contactInfo}</Text>
+            {hotline.website && (
+              <Text style={styles.websiteInfo}>Website: {hotline.website}</Text>
+            )}
+          </View>
+        ) : (
+          <View style={styles.contactInfoContainer}>
+            {hotline.phone && (
+              <Text style={styles.hotlineInfo}>
+                {hasText && hasCall ? 'Call ' : ''}{hotline.phone}
+              </Text>
+            )}
+            {hotline.textNumber && (
+              <Text style={styles.hotlineInfo}>
+                {hasCall ? 'Text ' : 'Text or WhatsApp '}
+                {hotline.textKeyword || 'START'} to {hotline.textNumber}
+              </Text>
+            )}
+            {hotline.website && (
+              <Text style={styles.websiteInfo}>Website: {hotline.website}</Text>
+            )}
+          </View>
         )}
-        <TouchableOpacity
-          style={styles.callButton}
-          onPress={() => handleCall(hotline.phone)}
-        >
-          <Image source={ImagePath.CallIcon} style={styles.callButtonIcon} resizeMode="contain" />
-          <Text style={styles.callButtonText}>{RESOURCES.CALL}</Text>
-        </TouchableOpacity>
       </View>
-      <Text style={styles.hotlineInfo}>
-        {hotline.phone}
-        {hotline.textNumber && ` - Text ${hotline.textKeyword || 'START'} to ${hotline.textNumber}`}
-      </Text>
-    </View>
-  );
+    );
+  };
 
   const renderBookArticleCard = (item: BookArticle) => (
     <View key={item.id} style={styles.resourceCard}>
@@ -83,12 +121,13 @@ const ResourcesScreen: React.FC = () => {
           <Text style={styles.tagText}>{item.type}</Text>
         </View>
       </View>
-      <TouchableOpacity
-        style={styles.primaryButton}
+      <CustomButton
+        title={RESOURCES.OPEN_RESOURCE}
         onPress={() => handleOpenResource(item.url)}
-      >
-        <Text style={styles.primaryButtonText}>{RESOURCES.OPEN_RESOURCE}</Text>
-      </TouchableOpacity>
+        variant="primary"
+        style={styles.customButton}
+        textStyle={{ fontSize: scaleFont(14) }}
+      />
     </View>
   );
 
@@ -103,12 +142,13 @@ const ResourcesScreen: React.FC = () => {
           <Text style={styles.tagText}>{item.type}</Text>
         </View>
       </View>
-      <TouchableOpacity
-        style={styles.primaryButton}
+      <CustomButton
+        title={RESOURCES.VISIT_WEBSITE}
         onPress={() => handleVisitWebsite(item.url)}
-      >
-        <Text style={styles.primaryButtonText}>{RESOURCES.VISIT_WEBSITE}</Text>
-      </TouchableOpacity>
+        variant="primary"
+        style={styles.customButton}
+        textStyle={{ fontSize: scaleFont(14) }}
+      />
     </View>
   );
 
@@ -136,7 +176,7 @@ const ResourcesScreen: React.FC = () => {
           contentContainerStyle={commonStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={commonStyles.content}>
+          <View style={commonStyles.contentTransparent}>
             {/* Crisis Hotlines Section */}
             {renderSectionHeader(ImagePath.CallIcon, RESOURCES.CRISIS_HOTLINES)}
             {crisisHotlines.map(renderCrisisHotlineCard)}
@@ -269,6 +309,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     marginRight: scale(12),
   },
+  fullWidthButton: {
+    flex: 1,
+    marginRight: 0,
+  },
   textButtonIcon: {
     width: scale(16),
     height: scale(16),
@@ -303,24 +347,25 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     fontFamily: 'varela_round_regular',
   },
+  contactInfoContainer: {
+    marginTop: scale(4),
+  },
   hotlineInfo: {
     fontSize: scaleFont(14),
     color: COLORS.TEXT_MUTED,
     fontFamily: 'varela_round_regular',
     lineHeight: scaleFont(20),
+    marginBottom: scale(4),
   },
-  primaryButton: {
-    backgroundColor: COLORS.PRIMARY,
-    borderRadius: scale(12),
-    paddingVertical: scale(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
-    color: COLORS.WHITE,
+  websiteInfo: {
+    fontSize: scaleFont(14),
+    color: COLORS.TEXT_MUTED,
     fontFamily: 'varela_round_regular',
+    lineHeight: scaleFont(20),
+  },
+  customButton: {
+    borderRadius: scale(12),
+    paddingVertical: scale(12),
   },
 });
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { scale, scaleFont } from '../../../utils/scaling';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -11,8 +12,29 @@ interface TabBarProps {
   navigation: any;
 }
 
+// List of screens where tab bar should be hidden
+const HIDDEN_TAB_BAR_SCREENS = [
+  'NewJournalEntry',
+  'EditJournalEntry',
+  'JournalEntryDetail',
+  'QAReflectionDetail',
+  'EditProfile',
+  'ChangePassword',
+];
+
 const CustomTabBar: React.FC<TabBarProps> = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
+  
+  // Get the current focused route
+  const currentRoute = state.routes[state.index];
+  const focusedRouteName = getFocusedRouteNameFromRoute(currentRoute) || currentRoute.name;
+
+  // Hide tab bar on nested screens
+  const shouldHideTabBar = HIDDEN_TAB_BAR_SCREENS.includes(focusedRouteName);
+
+  if (shouldHideTabBar) {
+    return null;
+  }
 
   const tabs = [
     { key: 'Home', label: 'Home', icon: ImagePath.HomeIcon },
