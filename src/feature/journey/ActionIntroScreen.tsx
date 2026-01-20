@@ -75,7 +75,9 @@ const ActionIntroScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header Section */}
       <View style={commonStyles.headerSection}>
-        <BackButton onPress={() => {
+        <BackButton 
+        color={COLORS.PRIMARY} 
+        onPress={() => {
           if (navigation.canGoBack()) {
             navigation.goBack();
           } else {

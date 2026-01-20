@@ -10,11 +10,13 @@ import Toolbar from '../../components/common/Toolbar';
 import { PROFILE, RESET_PASSWORD, ERRORS } from '../../constants/strings';
 import CustomButton from '../../components/common/CustomButton';
 import { commonStyles } from '../../styles/commonStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChangePasswordNavigationProp = StackNavigationProp<AppStackParamList, 'ChangePassword'>;
 
 const ChangePasswordScreen: React.FC = () => {
     const navigation = useNavigation<ChangePasswordNavigationProp>();
+    const insets = useSafeAreaInsets();
 
     const [currentPassword, setCurrentPassword] = useState('');
     const [password, setPassword] = useState('');
@@ -98,7 +100,7 @@ const ChangePasswordScreen: React.FC = () => {
     };
 
     return (
-        <View style={[commonStyles.container]}>
+        <View style={[commonStyles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: COLORS.WHITE }]}>
             <Toolbar
                 title={PROFILE.CHANGE_PASSWORD}
                 onBackPress={handleBack}

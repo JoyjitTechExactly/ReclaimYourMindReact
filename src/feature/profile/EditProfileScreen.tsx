@@ -10,6 +10,7 @@ import { AppStackParamList } from '../../navigators/types';
 import Toolbar from '../../components/common/Toolbar';
 import AuthInput from '../../components/auth/AuthInput';
 import CustomButton from '../../components/common/CustomButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type EditProfileNavigationProp = StackNavigationProp<AppStackParamList, 'EditProfile'>;
 
@@ -17,6 +18,7 @@ const EditProfileScreen: React.FC = () => {
     const navigation = useNavigation<EditProfileNavigationProp>();
     const [fullName, setFullName] = useState('Sarah Johnson');
     const [email, setEmail] = useState('sarah.johnson@email.com');
+    const insets = useSafeAreaInsets();
 
     const handleBack = () => {
         navigation.goBack();
@@ -31,7 +33,7 @@ const EditProfileScreen: React.FC = () => {
     };
 
     return (
-        <View style={[commonStyles.container]}>
+        <View style={[commonStyles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: COLORS.WHITE }]}>
             {/* Toolbar */}
             <Toolbar
                 title={PROFILE.EDIT_PROFILE}
@@ -39,39 +41,37 @@ const EditProfileScreen: React.FC = () => {
                 bottomMargin={30}
                 backButtonColor={COLORS.PRIMARY}
             />
-            <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
-                <View style={commonStyles.contentDefaultBackground}>
-                    <View style={[commonStyles.form]}>
-                        {/* Full Name Input */}
-                        <AuthInput
-                            label="Full Name"
-                            value={fullName}
-                            onChangeText={setFullName}
-                            placeholder="Enter your full name"
-                            autoCapitalize="words"
-                        />
+            <View style={commonStyles.contentDefaultBackground}>
+                <View style={[commonStyles.form]}>
+                    {/* Full Name Input */}
+                    <AuthInput
+                        label="Full Name"
+                        value={fullName}
+                        onChangeText={setFullName}
+                        placeholder="Enter your full name"
+                        autoCapitalize="words"
+                    />
 
-                        {/* Email Input (Read-only) */}
-                        <AuthInput
-                            label="Email"
-                            value={email}
-                            editable={false}
-                            placeholder="Enter your email"
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                            style={styles.inputDisabled}
-                        />
+                    {/* Email Input (Read-only) */}
+                    <AuthInput
+                        label="Email"
+                        value={email}
+                        editable={false}
+                        placeholder="Enter your email"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        style={styles.inputDisabled}
+                    />
 
-                        {/* Save Button */}
-                        <CustomButton
-                            title="Save"
-                            onPress={handleSave}
-                            disabled={!fullName.trim()}
-                            style={{ marginTop: scale(24) }}
-                        />
-                    </View>
+                    {/* Save Button */}
+                    <CustomButton
+                        title="Save"
+                        onPress={handleSave}
+                        disabled={!fullName.trim()}
+                        style={{ marginTop: scale(24) }}
+                    />
                 </View>
-            </ScrollView>
+            </View>
         </View>
     );
 };

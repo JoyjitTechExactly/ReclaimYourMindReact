@@ -125,7 +125,7 @@ const TopicListingScreen: React.FC = () => {
         </View>
       </TouchableOpacity>
     );
-  }; 
+  };
 
   if (!stepData) {
     return (
@@ -141,6 +141,7 @@ const TopicListingScreen: React.FC = () => {
       <View style={commonStyles.headerSection}>
         <View style={[commonStyles.row, styles.headerTopRow]}>
           <BackButton
+            color={COLORS.PRIMARY}
             onPress={() => {
               if (navigation.canGoBack()) {
                 navigation.goBack();
