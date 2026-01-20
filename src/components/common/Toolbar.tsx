@@ -30,7 +30,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
       style={[
         styles.container,
         {
-          paddingTop: insets.top + scale(24),
           padding: scale(24),
           backgroundColor,
         },

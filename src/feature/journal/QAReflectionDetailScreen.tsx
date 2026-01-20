@@ -11,6 +11,7 @@ import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { sampleQAReflections, QAReflection } from '../../constants/constantData';
 import Toolbar from '../../components/common/Toolbar';
+import JourneyTags from '../../components/common/journey/JourneyTags';
 
 type QAReflectionDetailRouteProp = RouteProp<AppStackParamList, 'QAReflectionDetail'>;
 type QAReflectionDetailNavigationProp = StackNavigationProp<AppStackParamList, 'QAReflectionDetail'>;
@@ -104,11 +105,7 @@ const QAReflectionDetailScreen: React.FC = () => {
             <View style={styles.entryCard}>
               <View style={styles.metadataHeader}>
                 <Text style={styles.entryTitle}>{reflection.focusOfAdvice}</Text>
-                {reflection.tag && (
-                  <View style={styles.tag}>
-                    <Text style={styles.tagText}>{reflection.tag}</Text>
-                  </View>
-                )}
+                <JourneyTags stepType={reflection.tag || ''} />
               </View>
               <Text style={styles.entryDate}>{reflection.date}, {reflection.time}</Text>
             </View>
@@ -237,21 +234,6 @@ const styles = StyleSheet.create({
     fontFamily: 'varela_round_regular',
     flex: 1,
     marginRight: scale(8),
-  },
-  tag: {
-    backgroundColor: COLORS.PRIMARY,
-    paddingHorizontal: scale(14),
-    paddingVertical: scale(6),
-    borderRadius: scale(20),
-    minHeight: scale(28),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tagText: {
-    fontSize: scaleFont(12),
-    fontWeight: '600',
-    color: COLORS.WHITE,
-    fontFamily: 'varela_round_regular',
   },
   entryDate: {
     fontSize: scaleFont(12),

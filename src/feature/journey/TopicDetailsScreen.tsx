@@ -60,23 +60,24 @@ const TopicDetailsScreen: React.FC = () => {
   };
 
   const handleBackToOverview = () => {
-    // For Action step, check if we need to go back to category or main overview
-    if (stepType === 'Action' && stepData?.categories) {
-      const topicCategory = stepData.categories.find(cat => 
-        cat.topics.some(t => t.id === topicId)
-      );
-      if (topicCategory) {
-        navigation.navigate('TopicListing', { 
-          stepId, 
-          stepType, 
-          categoryId: topicCategory.id 
-        });
-      } else {
-        navigation.navigate('TopicListing', { stepId, stepType });
-      }
-    } else {
-      navigation.navigate('TopicListing', { stepId, stepType });
-    }
+    // // For Action step, check if we need to go back to category or main overview
+    // if (stepType === 'Action' && stepData?.categories) {
+    //   const topicCategory = stepData.categories.find(cat => 
+    //     cat.topics.some(t => t.id === topicId)
+    //   );
+    //   if (topicCategory) {
+    //     navigation.navigate('TopicListing', { 
+    //       stepId, 
+    //       stepType, 
+    //       categoryId: topicCategory.id 
+    //     });
+    //   } else {
+    //     navigation.navigate('TopicListing', { stepId, stepType });
+    //   }
+    // } else {
+    //   navigation.navigate('TopicListing', { stepId, stepType });
+    // }
+    navigation.goBack()
   };
 
   if (!topic) {

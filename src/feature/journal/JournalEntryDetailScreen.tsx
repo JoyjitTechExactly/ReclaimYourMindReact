@@ -96,16 +96,16 @@ const JournalEntryDetailScreen: React.FC = () => {
 
   if (!entry) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text>Loading...</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
-      <Toolbar title={JOURNAL.JOURNAL_ENTRIES} onBackPress={handleBack} bottomMargin={30} backButtonColor={COLORS.PRIMARY} />
+      <Toolbar title={JOURNAL.JOURNAL_ENTRIES} onBackPress={handleBack} backButtonColor={COLORS.PRIMARY} />
 
       <View style={commonStyles.contentDefaultBackground}>
         <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>

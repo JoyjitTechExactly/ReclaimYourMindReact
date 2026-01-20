@@ -118,7 +118,7 @@ const ProfileScreen: React.FC = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* User Profile Header */}
-      <View style={styles.profileHeader}>
+      <View style={[commonStyles.fixedHeader, styles.profileHeader]}>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{PROFILE.DEFAULT_USER_NAME}</Text>
           <Text style={styles.userEmail}>{PROFILE.DEFAULT_USER_EMAIL}</Text>
@@ -132,12 +132,13 @@ const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Scrollable Content */}
       <ImageBackground
         source={ImagePath.ScreenBackground}
         style={commonStyles.backgroundImage}
       >
         <ScrollView
-          style={{ flex: 1 }}
+          style={styles.scrollView}
           contentContainerStyle={commonStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -286,16 +287,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
   },
+  scrollView: {
+    flex: 1,
+  },
   profileHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: scale(24),
-    paddingVertical: scale(16),
-    marginTop: scale(24),
-    paddingBottom: scale(20),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER_LIGHT,
+    alignItems: 'flex-end',
   },
   userInfo: {
     flex: 1,
