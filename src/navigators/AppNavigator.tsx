@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { BackHandler, Platform, ToastAndroid } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; import { useNavigation, useRoute, NavigationProp } from '@react-navigation/native';
 import { AppStackParamList } from './types';
-import HomeScreen from '../feature/home/HomeScreen';
+import HomeNavigator from './HomeNavigator';
 import ResourcesScreen from '../feature/resources/ResourcesScreen';
 import JournalNavigator from './JournalNavigator';
 import ProfileNavigator from './ProfileNavigator';
@@ -66,7 +66,7 @@ const AppNavigator: React.FC = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeNavigator}
         options={{
           tabBarLabel: 'Home',
         }}

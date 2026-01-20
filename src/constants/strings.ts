@@ -252,3 +252,44 @@ export const PROFILE = {
   PRIVACY_POLICY_ERROR: 'Could not open privacy policy link.',
   TERMS_ERROR: 'Could not open terms and condition link.',
 } as const;
+
+// Journey Screens
+export const JOURNEY = {
+  // Action Intro Screen
+  ACTION_TITLE: 'Action',
+  ACTION_SUBTITLE: 'Practical steps to protect and empower yourself',
+  
+  // Topic Listing Screen
+  PROGRESS: 'Progress',
+  TOPICS_COMPLETED: '{completed} of {total} topics',
+  CONTROLLER_VERSION: 'Controller Version',
+  ADAPTER_VERSION: 'Adapter Version',
+  TRACK: '{version} Track',
+  EXTRA_VIDEOS: 'Extra Videos',
+  APPRECIATION_FOOTER: 'This is about balanced thinking, not forced positivity.',
+  CATEGORY_COMPLETED: '{completed} of {total} completed',
+  
+  // Topic Details Screen
+  KEY_LEARNING_POINTS: 'Key Learning Points',
+  REFLECTION_QUESTIONS: 'Reflection Questions',
+  REFLECTION_PLACEHOLDER: 'Write your reflection here...',
+  DOWNLOAD_PDF: 'Download PDF',
+  SAVE_REFLECTION: 'Save Reflection',
+  MARK_TOPIC_COMPLETE: 'Mark Topic Complete',
+  BACK_TO_OVERVIEW: 'Back to {stepType} Overview',
+  
+  // Topic Completion Screen
+  COMPLETION_MESSAGE: 'Well done — you\'ve completed this topic',
+  COMPLETION_INSTRUCTION: 'Take your time before moving on. Processing new information is an important part of understanding.',
+  NEXT_TOPIC: 'Next Topic',
+  BACK_TO_OVERVIEW_BUTTON: 'Back to Overview',
+  COMPLETED_COUNT: '{completed} of {total} completed',
+  
+  // Extra Videos Screen
+  EXTRA_VIDEOS_TITLE: 'Extra Videos',
+  NO_EXTRA_VIDEOS: 'No extra videos available',
+  
+  // Common
+  STEP_NOT_FOUND: 'Step not found',
+  TOPIC_NOT_FOUND: 'Topic not found',
+} as const;

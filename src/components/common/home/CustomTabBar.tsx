@@ -19,6 +19,12 @@ const HIDDEN_TAB_BAR_SCREENS = [
   'QAReflectionDetail',
   'EditProfile',
   'ChangePassword',
+  // Journey flow screens
+  'ActionIntro',
+  'TopicListing',
+  'TopicDetails',
+  'ExtraVideos',
+  'TopicCompletion',
 ];
 
 const CustomTabBar: React.FC<TabBarProps> = ({ state, descriptors, navigation }) => {

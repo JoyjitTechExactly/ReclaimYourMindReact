@@ -383,6 +383,17 @@ export const commonStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_HEADER,
   },
+  headerSection: {
+    backgroundColor: COLORS.WHITE,
+    paddingHorizontal: scale(24),
+    paddingTop: scale(24),
+    paddingBottom: scale(16),
+    shadowColor: COLORS.SHADOW,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   backgroundImage: {
     flex: 1,
     width: '100%',
@@ -392,5 +403,10 @@ export const commonStyles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: scale(24)
+  },
+  statusIcon: {
+    width: scale(14),
+    height: scale(14),
+    marginRight: scale(8),
   },
 });

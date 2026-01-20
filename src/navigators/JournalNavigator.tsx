@@ -11,6 +11,7 @@ const Stack = createStackNavigator<AppStackParamList>();
 const JournalNavigator: React.FC = () => {
   return (
     <Stack.Navigator
+      initialRouteName="Journal"
       screenOptions={{
         headerShown: false,
       }}

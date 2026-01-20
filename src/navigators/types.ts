@@ -11,13 +11,22 @@ export type AuthStackParamList = {
 };
 
 export type AppStackParamList = {
+  // Tab Navigator Screens
   Home: undefined;
   Resources: undefined;
   Journal: undefined;
+  Profile: undefined;
+  // Home Navigator Screens
+  ActionIntro: undefined;
+  TopicListing: { stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action'; categoryId?: string };
+  TopicDetails: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
+  ExtraVideos: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
+  TopicCompletion: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
+  // Journal Navigator Screens
   NewJournalEntry: undefined;
   JournalEntryDetail: { entryId: string; editMode?: boolean };
   QAReflectionDetail: { reflectionId: string; editMode?: boolean };
-  Profile: undefined;
+  // Profile Navigator Screens
   EditProfile: undefined;
   ChangePassword: undefined;
 };

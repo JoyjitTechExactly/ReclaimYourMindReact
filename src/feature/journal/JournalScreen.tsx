@@ -10,6 +10,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { sampleJournalEntries, sampleQAReflections, JournalEntry, QAReflection } from '../../constants/constantData';
+import TabToggle from '../../components/common/TabToggle';
 
 type JournalNavigationProp = StackNavigationProp<AppStackParamList, 'Journal'>;
 
@@ -247,24 +248,15 @@ const JournalScreen: React.FC = () => {
         style={commonStyles.backgroundImage}
       >
         {/* Tabs */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'entries' ? styles.activeTab : styles.inactiveTab]}
-            onPress={() => setActiveTab('entries')}
-          >
-            <Text style={[styles.tabText, activeTab === 'entries' ? styles.activeTabText : styles.inactiveTabText]}>
-              {JOURNAL.JOURNAL_ENTRIES}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'reflections' ? styles.activeTab : styles.inactiveTab]}
-            onPress={() => setActiveTab('reflections')}
-          >
-            <Text style={[styles.tabText, activeTab === 'reflections' ? styles.activeTabText : styles.inactiveTabText]}>
-              {JOURNAL.QA_REFLECTIONS}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TabToggle
+          options={[
+            { label: JOURNAL.JOURNAL_ENTRIES, value: 'entries' },
+            { label: JOURNAL.QA_REFLECTIONS, value: 'reflections' },
+          ]}
+          selectedValue={activeTab}
+          onValueChange={(value) => setActiveTab(value as 'entries' | 'reflections')}
+          variant="journal"
+        />
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={commonStyles.scrollContent}
@@ -319,39 +311,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.WHITE,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: scale(12),
-    marginTop: scale(12),
-    marginHorizontal: scale(24),
-    marginBottom: scale(12),
-  },
-  tab: {
-    flex: 1,
-    margin: scale(6),
-    paddingVertical: scale(16),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: scale(12),
-  },
-  activeTab: {
-    backgroundColor: COLORS.WHITE,
-  },
-  inactiveTab: {
-    backgroundColor: COLORS.SECONDARY,
-  },
-  tabText: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
-    fontFamily: 'varela_round_regular',
-  },
-  activeTabText: {
-    color: COLORS.TEXT_DARK,
-  },
-  inactiveTabText: {
-    color: COLORS.TEXT_DARK,
   },
   privacyContainer: {
     marginTop: scale(4),

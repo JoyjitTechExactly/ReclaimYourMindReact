@@ -27,6 +27,7 @@ export const ImagePath = {
   RightArrow: require("../assets/icRightArrow.png"),
   RedirectIcon: require("../assets/icRedirect.png"),
   KeyIcon: require("../assets/icKey.png"),
+  IdeaIcon: require("../assets/icIdea.png"),
 
 
   // Journey Steps Icons
@@ -34,6 +35,9 @@ export const ImagePath = {
   Journey2: require("../assets/journey2.png"),
   Journey3: require("../assets/journey3.png"),
   Journey4: require("../assets/journey4.png"),
+  JourneyComplete: require("../assets/icSuccess.png"),
+  JourneyPending: require("../assets/icPending.png"),
+  JourneyInProgress: require("../assets/icProgress.png"),
 
   // Resources Icons
   CallIcon: require("../assets/icCall.png"),

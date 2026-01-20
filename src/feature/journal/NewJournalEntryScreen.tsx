@@ -75,7 +75,7 @@ const NewJournalEntryScreen: React.FC = () => {
             >
               <Text style={[styles.saveButtonText, !content.trim() && styles.saveButtonTextDisabled]}>
                 {JOURNAL.SAVE_ENTRY}
-              </Text>
+              </Text>  
             </TouchableOpacity>
             
             <View style={styles.privacyContainer}>

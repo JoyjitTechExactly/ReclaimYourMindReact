@@ -99,7 +99,7 @@ const QAReflectionDetailScreen: React.FC = () => {
         backButtonColor={COLORS.PRIMARY} />
       <View style={commonStyles.contentDefaultBackground}>
         <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={commonStyles.contentDefaultBackground}>
+          <View>
             {/* Card 1: Entry Metadata */}
             <View style={styles.entryCard}>
               <View style={styles.metadataHeader}>
@@ -394,6 +394,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.WHITE,
     fontFamily: 'varela_round_regular',
+  },
+  toggleContainer: {
+    marginBottom: scale(16),
+    marginHorizontal: scale(24),
   },
 });
 

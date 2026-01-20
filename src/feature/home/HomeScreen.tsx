@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { AppStackParamList } from '../../navigators/types';
 import { COLORS } from '../../constants/colors';
 import { HOME } from '../../constants/strings';
 import { homeJourneyStages } from '../../constants/constantData';
@@ -8,9 +11,27 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleFont } from '../../utils/scaling';
 
+type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Home'>;
+
 const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<HomeNavigationProp>();
   const overallProgress = 0.41; // 41%
+
+  const handleStepPress = (step: typeof homeJourneyStages[0]) => {
+    const stepType = step.title as 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action';
+    
+    // Action step goes to ActionIntro first
+    if (stepType === 'Action') {
+      navigation.navigate('ActionIntro');
+    } else {
+      // Other steps go directly to TopicListing
+      navigation.navigate('TopicListing', {
+        stepId: step.id,
+        stepType: stepType,
+      });
+    }
+  };
 
   // Find the next incomplete stage
   const nextStage = homeJourneyStages.find(stage => stage.progress > 0 && stage.progress < stage.total) || homeJourneyStages[0];
@@ -23,10 +44,24 @@ const HomeScreen: React.FC = () => {
     );
   };
 
-  const JourneyStepsList = ({ homeJourneyStages }) => {
-    const renderItem = ({ item }) => {
+  interface JourneyStepItem {
+    id: string;
+    title: string;
+    description: string;
+    progress: number;
+    total: number;
+    completed: boolean;
+    icon: any;
+  }
+
+  const JourneyStepsList = ({ homeJourneyStages }: { homeJourneyStages: JourneyStepItem[] }) => {
+    const renderItem = ({ item }: { item: JourneyStepItem }) => {
       return (
-        <View style={styles.journeyStepRow}>
+        <TouchableOpacity
+          style={styles.journeyStepRow}
+          onPress={() => handleStepPress(item)}
+          activeOpacity={0.7}
+        >
           {/* Left Icon */}
           <View style={styles.iconWrapper}>
             <Image source={item.icon} style={styles.journeyStepIcon} />
@@ -54,7 +89,10 @@ const HomeScreen: React.FC = () => {
 
             {item.total > 0 && (<View style={[commonStyles.spaceBetween, { flexDirection: 'row' }]}>
               {/* Resume Button */}
-              <TouchableOpacity style={styles.resumeButton}>
+              <TouchableOpacity
+                style={styles.resumeButton}
+                onPress={() => handleStepPress(item)}
+              >
                 <Text style={styles.resumeButtonText}>{HOME.RESUME}</Text>
               </TouchableOpacity>
 
@@ -64,7 +102,7 @@ const HomeScreen: React.FC = () => {
               </Text>
             </View>)}
           </View>
-        </View>
+        </TouchableOpacity>
       );
     };
 
