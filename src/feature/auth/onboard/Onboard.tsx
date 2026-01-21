@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   logoImage: {
     width: '100%',
-    height: scaleHeight(350),
+    height: scaleHeight(310),
   },
   loginSection: {
     flexDirection: 'row',

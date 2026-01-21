@@ -41,7 +41,6 @@ const ProfileScreen: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             dispatch(logout());
-            navigation.navigate('SignIn');
           },
         },
       ]
@@ -62,7 +61,6 @@ const ProfileScreen: React.FC = () => {
     setShowDeleteModal(false);
     // Dispatch logout action which will navigate to login screen
     dispatch(logout());
-    navigation.navigate('SignIn');
   };
 
   const handleCancelDelete = () => {
