@@ -12,9 +12,9 @@ import { mockTopics, Topic, ExtraVideo } from '../../../constants/constantData';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
 import VideoPlayer from '../../../components/common/home/VideoPlayer';
-import JourneyNavigationButtons from '../../../components/common/journey/JourneyNavigationButtons';
-import JourneyTags from '../../../components/common/journey/JourneyTags';
 import { JOURNEY } from '../../../constants/strings';
+import JourneyTags from '../../../components/common/home/journey/JourneyTags';
+import JourneyNavigationButtons from '../../../components/common/home/journey/JourneyNavigationButtons';
 
 type ExtraVideosNavigationProp = StackNavigationProp<AppStackParamList, 'ExtraVideos'>;
 type ExtraVideosRouteProp = RouteProp<AppStackParamList, 'ExtraVideos'>;

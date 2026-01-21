@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../../../constants/colors';
-import { commonStyles } from '../../../styles/commonStyles';
-import { scale, scaleFont } from '../../../utils/scaling';
-import { JOURNEY } from '../../../constants/strings';
+import { JOURNEY } from '../../../../constants/strings';
+import { commonStyles } from '../../../../styles/commonStyles';
+import { COLORS } from '../../../../constants/colors';
+import { scale, scaleFont } from '../../../../utils/scaling';
 
 interface JourneyTagsProps {
   stepType: string;

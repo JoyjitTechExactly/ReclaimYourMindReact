@@ -11,7 +11,7 @@ import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { sampleQAReflections, QAReflection } from '../../constants/constantData';
 import Toolbar from '../../components/common/Toolbar';
-import JourneyTags from '../../components/common/journey/JourneyTags';
+import JourneyTags from '../../components/common/home/journey/JourneyTags';
 
 type QAReflectionDetailRouteProp = RouteProp<AppStackParamList, 'QAReflectionDetail'>;
 type QAReflectionDetailNavigationProp = StackNavigationProp<AppStackParamList, 'QAReflectionDetail'>;

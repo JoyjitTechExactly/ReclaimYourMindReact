@@ -11,9 +11,9 @@ import { ImagePath } from '../../../constants/imagePath';
 import { mockTopics, StepTopics, Topic, VersionType, ActionCategory } from '../../../constants/constantData';
 import BackButton from '../../../components/common/BackButton';
 import TabToggle from '../../../components/common/TabToggle';
-import JourneyTags from '../../../components/common/journey/JourneyTags';
 import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
 import { JOURNEY } from '../../../constants/strings';
+import JourneyTags from '../../../components/common/home/journey/JourneyTags';
 
 type TopicListingNavigationProp = StackNavigationProp<AppStackParamList, 'TopicListing'>;
 type TopicListingRouteProp = RouteProp<AppStackParamList, 'TopicListing'>;

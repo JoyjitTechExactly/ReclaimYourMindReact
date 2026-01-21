@@ -11,9 +11,9 @@ import { mockTopics, Topic } from '../../../constants/constantData';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
 import VideoPlayer from '../../../components/common/home/VideoPlayer';
-import JourneyNavigationButtons from '../../../components/common/journey/JourneyNavigationButtons';
-import JourneyTags from '../../../components/common/journey/JourneyTags';
 import { JOURNEY } from '../../../constants/strings';
+import JourneyTags from '../../../components/common/home/journey/JourneyTags';
+import JourneyNavigationButtons from '../../../components/common/home/journey/JourneyNavigationButtons';
 
 type TopicDetailsNavigationProp = StackNavigationProp<AppStackParamList, 'TopicDetails'>;
 type TopicDetailsRouteProp = RouteProp<AppStackParamList, 'TopicDetails'>;
