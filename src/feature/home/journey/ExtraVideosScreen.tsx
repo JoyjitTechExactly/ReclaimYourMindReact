@@ -11,10 +11,10 @@ import { ImagePath } from '../../../constants/imagePath';
 import { mockTopics, Topic, ExtraVideo } from '../../../constants/constantData';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
-import VideoPlayer from '../../../components/common/home/VideoPlayer';
+import VideoPlayer from '../../../components/home/VideoPlayer';
 import { JOURNEY } from '../../../constants/strings';
-import JourneyTags from '../../../components/common/home/journey/JourneyTags';
-import JourneyNavigationButtons from '../../../components/common/home/journey/JourneyNavigationButtons';
+import JourneyTags from '../../../components/home/journey/JourneyTags';
+import JourneyNavigationButtons from '../../../components/home/journey/JourneyNavigationButtons';
 
 type ExtraVideosNavigationProp = StackNavigationProp<AppStackParamList, 'ExtraVideos'>;
 type ExtraVideosRouteProp = RouteProp<AppStackParamList, 'ExtraVideos'>;
@@ -146,6 +146,7 @@ const ExtraVideosScreen: React.FC = () => {
         style={{ flex: 1 }}
         contentContainerStyle={commonStyles.scrollContent}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
       >
         <View style={commonStyles.contentTransparent}>
           {extraVideos.length > 0 ? (

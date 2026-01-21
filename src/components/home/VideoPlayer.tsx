@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, Image, ImageBackground } from 'react-native';
-import { scale, scaleFont } from '../../../utils/scaling';
-import { COLORS } from '../../../constants/colors';
-import { getThumbnailFromUrl } from '../../../utils/youtubeUtils';
-import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleFont } from '../../utils/scaling';
+import { COLORS } from '../../constants/colors'; 
+import { getThumbnailFromUrl } from '../../utils/youtubeUtils';
+import { ImagePath } from '../../constants/imagePath';
 
 export type VideoPlayerVariant = 'main' | 'card';
 

@@ -10,7 +10,7 @@ import { scale, scaleFont } from '../../../utils/scaling';
 import { ImagePath } from '../../../constants/imagePath';
 import { mockTopics } from '../../../constants/constantData';
 import { JOURNEY } from '../../../constants/strings';
-import JourneyNavigationButtons from '../../../components/common/home/journey/JourneyNavigationButtons';
+import JourneyNavigationButtons from '../../../components/home/journey/JourneyNavigationButtons';
 
 type TopicCompletionRouteProp = RouteProp<AppStackParamList, 'TopicCompletion'>;
 type TopicCompletionNavigationProp = StackNavigationProp<AppStackParamList, 'TopicCompletion'>;

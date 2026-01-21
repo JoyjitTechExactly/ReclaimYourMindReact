@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import CustomButton from '../../CustomButton';
-import { scale, scaleFont } from '../../../../utils/scaling';
-import { COLORS } from '../../../../constants/colors';
-import { commonStyles } from '../../../../styles/commonStyles';
+import CustomButton from '../../common/CustomButton';
+import { scale, scaleFont } from '../../../utils/scaling';
+import { COLORS } from '../../../constants/colors';
+import { commonStyles } from '../../../styles/commonStyles';
 
 
 interface JourneyNavigationButtonsProps {

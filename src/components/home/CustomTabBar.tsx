@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import { scale, scaleFont } from '../../../utils/scaling';
-import { COLORS } from '../../../constants/colors';
-import { ImagePath } from '../../../constants/imagePath';
+import { scale, scaleFont } from '../../utils/scaling';
+import { COLORS } from '../../constants/colors';
+import { ImagePath } from '../../constants/imagePath';
 
 interface TabBarProps {
   state: any;

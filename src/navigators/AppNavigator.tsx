@@ -6,7 +6,7 @@ import HomeNavigator from './HomeNavigator';
 import ResourcesScreen from '../feature/resources/ResourcesScreen';
 import JournalNavigator from './JournalNavigator';
 import ProfileNavigator from './ProfileNavigator';
-import CustomTabBar from '../components/common/home/CustomTabBar';
+import CustomTabBar from '../components/home/CustomTabBar';
 import Toast from 'react-native-toast-message';
 
 const Tab = createBottomTabNavigator<AppStackParamList>();

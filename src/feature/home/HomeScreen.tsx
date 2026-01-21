@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -50,14 +50,15 @@ const HomeScreen: React.FC = () => {
     description: string;
     progress: number;
     total: number;
-    completed: boolean;
+    completed: boolean; 
     icon: any;
   }
 
   const JourneyStepsList = ({ homeJourneyStages }: { homeJourneyStages: JourneyStepItem[] }) => {
-    const renderItem = ({ item }: { item: JourneyStepItem }) => {
+    const renderItem = (item: JourneyStepItem) => {
       return (
         <TouchableOpacity
+          key={item.id}
           style={styles.journeyStepRow}
           onPress={() => handleStepPress(item)}
           activeOpacity={0.7}
@@ -107,14 +108,8 @@ const HomeScreen: React.FC = () => {
     };
 
     return (
-      <View style={{ marginTop: scale(24) }}>
-        <FlatList
-          data={homeJourneyStages}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.journeyStepsList}
-        />
+      <View style={[styles.journeyStepsList, { marginTop: scale(24) }]}>
+        {homeJourneyStages.map(renderItem)}
       </View>
     );
   };

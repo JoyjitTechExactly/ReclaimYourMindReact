@@ -13,7 +13,7 @@ import BackButton from '../../../components/common/BackButton';
 import TabToggle from '../../../components/common/TabToggle';
 import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
 import { JOURNEY } from '../../../constants/strings';
-import JourneyTags from '../../../components/common/home/journey/JourneyTags';
+import JourneyTags from '../../../components/home/journey/JourneyTags';
 
 type TopicListingNavigationProp = StackNavigationProp<AppStackParamList, 'TopicListing'>;
 type TopicListingRouteProp = RouteProp<AppStackParamList, 'TopicListing'>;

@@ -1,17 +1,18 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+
 import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
-import { commonStyles } from '../../../styles/commonStyles';
-import { scale, scaleFont } from '../../../utils/scaling';
 import { ImagePath } from '../../../constants/imagePath';
 import { mockTopics, ActionCategory } from '../../../constants/constantData';
-import BackButton from '../../../components/common/BackButton';
-import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
 import { JOURNEY } from '../../../constants/strings';
+import { commonStyles } from '../../../styles/commonStyles';
+import { scale, scaleFont } from '../../../utils/scaling';
+import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
+import BackButton from '../../../components/common/BackButton';
 
 type ActionIntroNavigationProp = StackNavigationProp<AppStackParamList, 'ActionIntro'>;
 
@@ -45,7 +46,7 @@ const ActionIntroScreen: React.FC = () => {
     });
   };
 
-  const renderCategoryItem = ({ item }: { item: ActionCategory }) => {
+  const renderCategoryItem = (item: ActionCategory) => {
     const categoryStatus = getCategoryStatus(item);
 
     return (
@@ -75,22 +76,22 @@ const ActionIntroScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header Section */}
       <View style={commonStyles.headerSection}>
-        <BackButton 
-        color={COLORS.PRIMARY} 
-        onPress={() => {
-          if (navigation.canGoBack()) {
-            navigation.goBack();
-          } else {
-            navigation.navigate('Home');
-          }
-        }} />
+        <BackButton
+          color={COLORS.PRIMARY}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Home');
+            }
+          }} />
 
         <View>
           <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY }]}>{JOURNEY.ACTION_TITLE}</Text>
           <Text style={commonStyles.headerSubtitle}>
             {JOURNEY.ACTION_SUBTITLE}
           </Text>
-        </View> 
+        </View>
       </View>
 
       {/* Content Section */}
@@ -99,13 +100,17 @@ const ActionIntroScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => item.id}
-          renderItem={renderCategoryItem}
-          scrollEnabled={false}
-          contentContainerStyle={styles.categoriesList}
-        />
+        {categories.length > 0 ? (
+          categories.map((item) => (
+            <View key={item.id}>
+              {renderCategoryItem(item)}
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No categories available</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -121,12 +126,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BACKGROUND,
   },
   scrollContent: {
-    ...commonStyles.contentTransparent,
+    paddingHorizontal: scale(24),
     paddingTop: scale(24),
     paddingBottom: scale(40),
-  },
-  categoriesList: {
-    paddingBottom: scale(16),
   },
   categoryCard: {
     backgroundColor: COLORS.WHITE,
@@ -172,6 +174,17 @@ const styles = StyleSheet.create({
   statusText: {
     ...commonStyles.textSmall,
     color: COLORS.TEXT_MUTED,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: scale(40),
+  },
+  emptyStateText: {
+    fontSize: scaleFont(16),
+    color: COLORS.TEXT_MUTED,
+    fontFamily: 'varela_round_regular',
   },
 });
 
