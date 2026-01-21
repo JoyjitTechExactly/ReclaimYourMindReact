@@ -605,6 +605,7 @@ export const mockTopics: StepTopics[] = [
     stepType: 'Action',
     title: 'Action',
     description: 'Practical steps to prevent and empower yourself',
+    topics: [],
     categories: [
       {
         id: 'action-category-1',

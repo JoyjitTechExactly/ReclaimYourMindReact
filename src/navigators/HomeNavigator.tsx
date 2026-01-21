@@ -2,11 +2,11 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AppStackParamList } from './types';
 import HomeScreen from '../feature/home/HomeScreen';
-import ActionIntroScreen from '../feature/journey/ActionIntroScreen';
-import TopicListingScreen from '../feature/journey/TopicListingScreen';
-import TopicDetailsScreen from '../feature/journey/TopicDetailsScreen';
-import ExtraVideosScreen from '../feature/journey/ExtraVideosScreen';
-import TopicCompletionScreen from '../feature/journey/TopicCompletionScreen';
+import ActionIntroScreen from '../feature/home/journey/ActionIntroScreen';
+import TopicListingScreen from '../feature/home/journey/TopicListingScreen';
+import TopicDetailsScreen from '../feature/home/journey/TopicDetailsScreen';
+import ExtraVideosScreen from '../feature/home/journey/ExtraVideosScreen';
+import TopicCompletionScreen from '../feature/home/journey/TopicCompletionScreen';
 
 const Stack = createStackNavigator<AppStackParamList>();
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, FlatList, Modal, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, FlatList, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { sampleJournalEntries, sampleQAReflections, JournalEntry, QAReflection } from '../../constants/constantData';
 import TabToggle from '../../components/common/TabToggle';
+import { DropdownMenu, MenuItem } from '../../components/menu';
 
 type JournalNavigationProp = StackNavigationProp<AppStackParamList, 'Journal'>;
 
@@ -78,32 +79,35 @@ const JournalScreen: React.FC = () => {
             <Image source={ImagePath.MoreIcon} style={styles.menuIcon} resizeMode="contain" />
           </TouchableOpacity>
               {isMenuOpen && (
-                <View style={styles.menuContainer}>
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => {
-                      handleEditEntry(item.id);
-                      setMenuVisible(null);
-                    }}
-                  >
-                    <Image source={ImagePath.EditIcon} style={styles.menuItemIcon} resizeMode="contain" />
-                    <Text style={styles.menuItemText}>{JOURNAL.EDIT}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => handleDownloadEntry(item.id)}
-                  >
-                    <Image source={ImagePath.DownloadIcon} style={styles.menuItemIcon} resizeMode="contain" />
-                    <Text style={styles.menuItemText}>{JOURNAL.DOWNLOAD}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.menuItem, styles.menuItemDelete]}
-                    onPress={() => handleDeleteEntry(item.id)}
-                  >
-                    <Image source={ImagePath.DeleteIcon} style={[styles.menuItemIcon, styles.menuItemIconDelete]} resizeMode="contain" />
-                    <Text style={[styles.menuItemText, styles.menuItemTextDelete]}>{JOURNAL.DELETE}</Text>
-                  </TouchableOpacity>
-                </View>
+                <DropdownMenu
+                  items={[
+                    {
+                      icon: ImagePath.EditIcon,
+                      text: JOURNAL.EDIT,
+                      onPress: () => {
+                        handleEditEntry(item.id);
+                        setMenuVisible(null);
+                      },
+                    },
+                    {
+                      icon: ImagePath.DownloadIcon,
+                      text: JOURNAL.DOWNLOAD,
+                      onPress: () => {
+                        handleDownloadEntry(item.id);
+                        setMenuVisible(null);
+                      },
+                    },
+                    {
+                      icon: ImagePath.DeleteIcon,
+                      text: JOURNAL.DELETE,
+                      onPress: () => {
+                        handleDeleteEntry(item.id);
+                        setMenuVisible(null);
+                      },
+                      isDelete: true,
+                    },
+                  ]}
+                />
               )}
             </View>
           <View style={styles.entryHeaderSimple}>
@@ -111,20 +115,6 @@ const JournalScreen: React.FC = () => {
           </View>
           <Text style={styles.entryDate}>{item.date}, {item.time}</Text>
         </View>
-        {isMenuOpen && (
-          <Modal
-            visible={isMenuOpen}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setMenuVisible(null)}
-          >
-            <TouchableOpacity
-              style={styles.menuBackdrop}
-              activeOpacity={1}
-              onPress={() => setMenuVisible(null)}
-            />
-          </Modal>
-        )}
       </TouchableOpacity>
     );
   };
@@ -154,38 +144,35 @@ const JournalScreen: React.FC = () => {
                   <Image source={ImagePath.MoreIcon} style={styles.menuIcon} resizeMode="contain" />
                 </TouchableOpacity>
                 {isMenuOpen && (
-                  <View style={styles.menuContainer}>
-                    <TouchableOpacity
-                      style={styles.menuItem}
-                      onPress={() => {
-                        handleEditReflection(item.id);
-                        setMenuVisible(null);
-                      }}
-                    >
-                      <Image source={ImagePath.EditIcon} style={styles.menuItemIcon} resizeMode="contain" />
-                      <Text style={styles.menuItemText}>{JOURNAL.EDIT}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.menuItem}
-                      onPress={() => {
-                        handleDownloadEntry(item.id);
-                        setMenuVisible(null);
-                      }}
-                    >
-                      <Image source={ImagePath.DownloadIcon} style={styles.menuItemIcon} resizeMode="contain" />
-                      <Text style={styles.menuItemText}>{JOURNAL.DOWNLOAD}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.menuItem, styles.menuItemDelete]}
-                      onPress={() => {
-                        setQAReflections(qaReflections.filter(ref => ref.id !== item.id));
-                        setMenuVisible(null);
-                      }}
-                    >
-                      <Image source={ImagePath.DeleteIcon} style={[styles.menuItemIcon, styles.menuItemIconDelete]} resizeMode="contain" />
-                      <Text style={[styles.menuItemText, styles.menuItemTextDelete]}>{JOURNAL.DELETE}</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <DropdownMenu
+                    items={[
+                      {
+                        icon: ImagePath.EditIcon,
+                        text: JOURNAL.EDIT,
+                        onPress: () => {
+                          handleEditReflection(item.id);
+                          setMenuVisible(null);
+                        },
+                      },
+                      {
+                        icon: ImagePath.DownloadIcon,
+                        text: JOURNAL.DOWNLOAD,
+                        onPress: () => {
+                          handleDownloadEntry(item.id);
+                          setMenuVisible(null);
+                        },
+                      },
+                      {
+                        icon: ImagePath.DeleteIcon,
+                        text: JOURNAL.DELETE,
+                        onPress: () => {
+                          setQAReflections(qaReflections.filter(ref => ref.id !== item.id));
+                          setMenuVisible(null);
+                        },
+                        isDelete: true,
+                      },
+                    ]}
+                  />
                 )}
               </View>
             </View>
@@ -200,20 +187,6 @@ const JournalScreen: React.FC = () => {
             <Text style={styles.entryDate}>{item.date}, {item.time}</Text>
           </View>
         </TouchableOpacity>
-        {isMenuOpen && (
-          <Modal
-            visible={isMenuOpen}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setMenuVisible(null)}
-          >
-            <TouchableOpacity
-              style={styles.menuBackdrop}
-              activeOpacity={1}
-              onPress={() => setMenuVisible(null)}
-            />
-          </Modal>
-        )}
       </>
     );
   };
@@ -432,59 +405,6 @@ const styles = StyleSheet.create({
     fontSize: scaleFont(12),
     color: COLORS.TEXT_MUTED,
     fontFamily: 'varela_round_regular',
-  },
-  menuContainer: {
-    position: 'absolute',
-    top: scale(20),
-    right: 0,
-    backgroundColor: COLORS.WHITE,
-    borderRadius: scale(12),
-    paddingVertical: scale(4),
-    minWidth: scale(140),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 15,
-    zIndex: 1000,
-  },
-  menuBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    zIndex: 999,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: scale(20),
-    paddingVertical: scale(12),
-  },
-  menuItemDelete: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_LIGHT,
-  },
-  menuItemIcon: {
-    width: scale(18),
-    height: scale(18),
-    marginRight: scale(12),
-    tintColor: COLORS.TEXT_DARK,
-  },
-  menuItemIconDelete: {
-    width: scale(18),
-    height: scale(18),
-    tintColor: COLORS.ERROR,
-  },
-  menuItemText: {
-    fontSize: scaleFont(16),
-    color: COLORS.TEXT_DARK,
-    fontFamily: 'varela_round_regular',
-  },
-  menuItemTextDelete: {
-    color: COLORS.ERROR,
   },
   emptyState: {
     alignItems: 'center',

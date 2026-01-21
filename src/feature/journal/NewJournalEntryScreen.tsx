@@ -32,16 +32,15 @@ const NewJournalEntryScreen: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: COLORS.BACKGROUND }}
     >
       <View style={[styles.container]}>
         {/* Header */}
-        <Toolbar 
-          title={JOURNAL.JOURNAL_ENTRIES} 
-          onBackPress={handleBack} 
-          bottomMargin={30} 
-          backButtonColor={COLORS.PRIMARY} 
+        <Toolbar
+          title={JOURNAL.JOURNAL_ENTRIES}
+          onBackPress={handleBack}
+          bottomMargin={30}
+          backButtonColor={COLORS.PRIMARY}
           backgroundColor={COLORS.BACKGROUND}
         />
 
@@ -66,7 +65,7 @@ const NewJournalEntryScreen: React.FC = () => {
               />
             </View>
           </ScrollView>
-          
+
           <View style={styles.bottomContainer}>
             <TouchableOpacity
               style={[styles.saveButton, !content.trim() && styles.saveButtonDisabled]}
@@ -75,9 +74,9 @@ const NewJournalEntryScreen: React.FC = () => {
             >
               <Text style={[styles.saveButtonText, !content.trim() && styles.saveButtonTextDisabled]}>
                 {JOURNAL.SAVE_ENTRY}
-              </Text>  
+              </Text>
             </TouchableOpacity>
-            
+
             <View style={styles.privacyContainer}>
               <Image source={ImagePath.LockIcon} style={styles.lockIcon} resizeMode="contain" />
               <Text style={styles.privacyText}>Your journal entries are private and secure. Only you can see what you write here.</Text>

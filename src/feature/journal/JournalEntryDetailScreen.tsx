@@ -156,7 +156,7 @@ const JournalEntryDetailScreen: React.FC = () => {
       </View>
 
       {/* Action Buttons - Fixed at Bottom */}
-      <View style={styles.actionButtonsContainer}>
+      <View style={[styles.actionButtonsContainer, { paddingBottom: insets.bottom + scale(24) }]}>
         <TouchableOpacity
           style={styles.downloadButton}
           onPress={handleDownload}
@@ -305,7 +305,6 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     paddingHorizontal: scale(24),
-    paddingBottom: scale(24),
     paddingTop: scale(16),
     gap: scale(12),
     backgroundColor: COLORS.WHITE,

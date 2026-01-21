@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, Image, Switch, Alert, Linking, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, Image, Switch, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { logout } from '../../redux/slices/auth/authSlice';
+import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
 
 type ProfileNavigationProp = StackNavigationProp<AppStackParamList, 'Profile'>;
 
@@ -230,54 +231,12 @@ const ProfileScreen: React.FC = () => {
       </ImageBackground>
 
       {/* Delete Account Modal */}
-      <Modal
+      <DeleteAccountModal
         visible={showDeleteModal}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancelDelete}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {/* Warning Icon */}
-            <View style={styles.warningIconContainer}>
-              <View style={styles.warningTriangle}>
-                <Text style={styles.warningExclamation}>!</Text>
-              </View>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.modalTitle}>{PROFILE.DELETE_ACCOUNT}</Text>
-
-            {/* Warning Message */}
-            <Text style={styles.modalMessage}>{PROFILE.DELETE_ACCOUNT_WARNING}</Text>
-
-            {/* Buttons */}
-            <TouchableOpacity
-              style={styles.exportButton}
-              onPress={handleExportJournals}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.exportButtonText}>{PROFILE.EXPORT_JOURNALS}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={handleConfirmDelete}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.deleteButtonText}>{PROFILE.DELETE_ACCOUNT}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleCancelDelete}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelButtonText}>{PROFILE.CANCEL}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onExportJournals={handleExportJournals}
+        onConfirmDelete={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </View>
   );
 };
@@ -391,100 +350,6 @@ const styles = StyleSheet.create({
     width: scale(18),
     height: scale(18),
     tintColor: COLORS.PRIMARY,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: scale(24),
-  },
-  modalContent: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: scale(16),
-    padding: scale(24),
-    width: '100%',
-    maxWidth: scale(400),
-    alignItems: 'center',
-  },
-  warningIconContainer: {
-    marginBottom: scale(16),
-  },
-  warningTriangle: {
-    width: scale(60),
-    height: scale(60),
-    backgroundColor: COLORS.ERROR,
-    borderRadius: scale(30),
-    justifyContent: 'center',
-    alignItems: 'center',
-    transform: [{ rotate: '0deg' }],
-  },
-  warningExclamation: {
-    fontSize: scaleFont(36),
-    fontWeight: 'bold',
-    color: COLORS.WHITE,
-  },
-  modalTitle: {
-    fontSize: scaleFont(20),
-    fontWeight: '600',
-    color: COLORS.PRIMARY,
-    fontFamily: 'varela_round_regular',
-    marginBottom: scale(12),
-    textAlign: 'center',
-  },
-  modalMessage: {
-    fontSize: scaleFont(14),
-    color: COLORS.TEXT_DARK,
-    fontFamily: 'varela_round_regular',
-    lineHeight: scaleFont(20),
-    textAlign: 'center',
-    marginBottom: scale(24),
-  },
-  exportButton: {
-    width: '100%',
-    backgroundColor: COLORS.SECONDARY,
-    borderRadius: scale(12),
-    paddingVertical: scale(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: scale(12),
-  },
-  exportButtonText: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-    fontFamily: 'varela_round_regular',
-  },
-  deleteButton: {
-    width: '100%',
-    backgroundColor: COLORS.ERROR,
-    borderRadius: scale(12),
-    paddingVertical: scale(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: scale(12),
-  },
-  deleteButtonText: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
-    color: COLORS.WHITE,
-    fontFamily: 'varela_round_regular',
-  },
-  cancelButton: {
-    width: '100%',
-    backgroundColor: COLORS.WHITE,
-    borderRadius: scale(12),
-    paddingVertical: scale(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_LIGHT,
-  },
-  cancelButtonText: {
-    fontSize: scaleFont(16),
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-    fontFamily: 'varela_round_regular',
   },
 });
 

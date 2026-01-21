@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
     width: scale(24),
     height: scale(24),
     objectFit: 'contain',
+    tintColor: COLORS.WHITE,
   },
 
   // Title and duration - bottom left

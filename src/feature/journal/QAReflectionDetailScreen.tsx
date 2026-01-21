@@ -100,7 +100,7 @@ const QAReflectionDetailScreen: React.FC = () => {
         backButtonColor={COLORS.PRIMARY} />
       <View style={commonStyles.contentDefaultBackground}>
         <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
-          <View>
+          <View style={{ paddingBottom: scale(120) }}>
             {/* Card 1: Entry Metadata */}
             <View style={styles.entryCard}>
               <View style={styles.metadataHeader}>
@@ -164,7 +164,7 @@ const QAReflectionDetailScreen: React.FC = () => {
       </View>
 
       {/* Action Buttons - Fixed at Bottom */}
-      <View style={styles.actionButtonsContainer}>
+      <View style={[styles.actionButtonsContainer, { paddingBottom: insets.bottom + scale(24) }]}>
         <TouchableOpacity style={styles.downloadButton} onPress={handleDownloadPDF}>
           <Text style={styles.downloadButtonText}>{JOURNAL.DOWNLOAD_PDF}</Text>
         </TouchableOpacity>
@@ -342,7 +342,6 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     paddingHorizontal: scale(24),
-    paddingBottom: scale(24),
     paddingTop: scale(16),
     gap: scale(12),
     backgroundColor: COLORS.WHITE,

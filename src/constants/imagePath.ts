@@ -28,7 +28,7 @@ export const ImagePath = {
   RedirectIcon: require("../assets/icRedirect.png"),
   KeyIcon: require("../assets/icKey.png"),
   IdeaIcon: require("../assets/icIdea.png"),
-
+  DeleteAccountWarningIcon: require("../assets/icDeleteWarning.png"),
 
   // Journey Steps Icons
   Journey1: require("../assets/journey1.png"),

@@ -3,18 +3,18 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ImageBa
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { commonStyles } from '../../styles/commonStyles';
-import { scale, scaleFont } from '../../utils/scaling';
-import { ImagePath } from '../../constants/imagePath';
-import { mockTopics, Topic, ExtraVideo } from '../../constants/constantData';
-import BackButton from '../../components/common/BackButton';
-import CustomButton from '../../components/common/CustomButton';
-import VideoPlayer from '../../components/common/home/VideoPlayer';
-import JourneyNavigationButtons from '../../components/common/journey/JourneyNavigationButtons';
-import JourneyTags from '../../components/common/journey/JourneyTags';
-import { JOURNEY } from '../../constants/strings';
+import { AppStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { commonStyles } from '../../../styles/commonStyles';
+import { scale, scaleFont } from '../../../utils/scaling';
+import { ImagePath } from '../../../constants/imagePath';
+import { mockTopics, Topic, ExtraVideo } from '../../../constants/constantData';
+import BackButton from '../../../components/common/BackButton';
+import CustomButton from '../../../components/common/CustomButton';
+import VideoPlayer from '../../../components/common/home/VideoPlayer';
+import JourneyNavigationButtons from '../../../components/common/journey/JourneyNavigationButtons';
+import JourneyTags from '../../../components/common/journey/JourneyTags';
+import { JOURNEY } from '../../../constants/strings';
 
 type ExtraVideosNavigationProp = StackNavigationProp<AppStackParamList, 'ExtraVideos'>;
 type ExtraVideosRouteProp = RouteProp<AppStackParamList, 'ExtraVideos'>;
@@ -105,7 +105,8 @@ const ExtraVideosScreen: React.FC = () => {
 
       <View style={commonStyles.headerSection}>
         <View style={[commonStyles.row, styles.headerTopRow]}>
-          <BackButton 
+          <BackButton
+            color={COLORS.PRIMARY}
             onPress={() => {
               if (navigation.canGoBack()) {
                 navigation.goBack();

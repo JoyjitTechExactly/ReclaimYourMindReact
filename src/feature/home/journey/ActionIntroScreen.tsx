@@ -3,15 +3,15 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Image }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { commonStyles } from '../../styles/commonStyles';
-import { scale, scaleFont } from '../../utils/scaling';
-import { ImagePath } from '../../constants/imagePath';
-import { mockTopics, ActionCategory } from '../../constants/constantData';
-import BackButton from '../../components/common/BackButton';
-import { renderJourneyStatusIcon, getJourneyStatusText } from '../../utils/journeyUtils';
-import { JOURNEY } from '../../constants/strings';
+import { AppStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { commonStyles } from '../../../styles/commonStyles';
+import { scale, scaleFont } from '../../../utils/scaling';
+import { ImagePath } from '../../../constants/imagePath';
+import { mockTopics, ActionCategory } from '../../../constants/constantData';
+import BackButton from '../../../components/common/BackButton';
+import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
+import { JOURNEY } from '../../../constants/strings';
 
 type ActionIntroNavigationProp = StackNavigationProp<AppStackParamList, 'ActionIntro'>;
 

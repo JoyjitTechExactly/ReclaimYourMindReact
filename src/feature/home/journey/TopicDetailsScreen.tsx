@@ -3,17 +3,17 @@ import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AppStackParamList } from '../../navigators/types';
-import { COLORS } from '../../constants/colors';
-import { commonStyles } from '../../styles/commonStyles';
-import { scale, scaleFont } from '../../utils/scaling';
-import { mockTopics, Topic } from '../../constants/constantData';
-import BackButton from '../../components/common/BackButton';
-import CustomButton from '../../components/common/CustomButton';
-import VideoPlayer from '../../components/common/home/VideoPlayer';
-import JourneyNavigationButtons from '../../components/common/journey/JourneyNavigationButtons';
-import JourneyTags from '../../components/common/journey/JourneyTags';
-import { JOURNEY } from '../../constants/strings';
+import { AppStackParamList } from '../../../navigators/types';
+import { COLORS } from '../../../constants/colors';
+import { commonStyles } from '../../../styles/commonStyles';
+import { scale, scaleFont } from '../../../utils/scaling';
+import { mockTopics, Topic } from '../../../constants/constantData';
+import BackButton from '../../../components/common/BackButton';
+import CustomButton from '../../../components/common/CustomButton';
+import VideoPlayer from '../../../components/common/home/VideoPlayer';
+import JourneyNavigationButtons from '../../../components/common/journey/JourneyNavigationButtons';
+import JourneyTags from '../../../components/common/journey/JourneyTags';
+import { JOURNEY } from '../../../constants/strings';
 
 type TopicDetailsNavigationProp = StackNavigationProp<AppStackParamList, 'TopicDetails'>;
 type TopicDetailsRouteProp = RouteProp<AppStackParamList, 'TopicDetails'>;
@@ -93,7 +93,8 @@ const TopicDetailsScreen: React.FC = () => {
       {/* Header Section */}
       <View style={commonStyles.headerSection}>
         <View style={[commonStyles.row, styles.headerTopRow]}>
-          <BackButton 
+          <BackButton
+            color={COLORS.PRIMARY}
             onPress={() => {
               if (navigation.canGoBack()) {
                 navigation.goBack();
@@ -146,7 +147,7 @@ const TopicDetailsScreen: React.FC = () => {
 
         {/* Key Learning Points */}
         {topic.keyLearningPoints && topic.keyLearningPoints.length > 0 && (
-          <View style={styles.section}>
+          <View style={[commonStyles.card, styles.section, { borderColor: COLORS.BORDER_LIGHT }]}>
             <Text style={styles.sectionTitle}>{JOURNEY.KEY_LEARNING_POINTS}</Text>
             {topic.keyLearningPoints.map((point, index) => (
               <View key={index} style={styles.bulletPoint}>
@@ -157,51 +158,53 @@ const TopicDetailsScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Reflection Questions */}
-        {topic.reflectionQuestions && topic.reflectionQuestions.length > 0 && (
+        <View style={[commonStyles.card, { borderColor: COLORS.BORDER_LIGHT }]}>
+          {/* Reflection Questions */}
+          {topic.reflectionQuestions && topic.reflectionQuestions.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{JOURNEY.REFLECTION_QUESTIONS}</Text>
+              {topic.reflectionQuestions.map((question, index) => (
+                <View key={index} style={styles.questionContainer}>
+                  <Text style={styles.questionNumber}>{index + 1}.</Text>
+                  <Text style={styles.questionText}>{question}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Reflection Input */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{JOURNEY.REFLECTION_QUESTIONS}</Text>
-            {topic.reflectionQuestions.map((question, index) => (
-              <View key={index} style={styles.questionContainer}>
-                <Text style={styles.questionNumber}>{index + 1}.</Text>
-                <Text style={styles.questionText}>{question}</Text>
-              </View>
-            ))}
+            <TextInput
+              style={styles.reflectionInput}
+              placeholder={JOURNEY.REFLECTION_PLACEHOLDER}
+              placeholderTextColor={COLORS.TEXT_LIGHT}
+              multiline
+              numberOfLines={6}
+              value={reflection}
+              onChangeText={setReflection}
+              textAlignVertical="top"
+            />
           </View>
-        )}
 
-        {/* Reflection Input */}
-        <View style={styles.section}>
-          <TextInput
-            style={styles.reflectionInput}
-            placeholder={JOURNEY.REFLECTION_PLACEHOLDER}
-            placeholderTextColor={COLORS.TEXT_LIGHT}
-            multiline
-            numberOfLines={6}
-            value={reflection}
-            onChangeText={setReflection}
-            textAlignVertical="top"
-          />
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <CustomButton
-            title={JOURNEY.DOWNLOAD_PDF}
-            onPress={handleDownloadPDF}
-            variant="secondary"
-            fullWidth={false}
-            style={styles.downloadButton}
-            textStyle={styles.downloadButtonText}
-          />
-          <CustomButton
-            title={JOURNEY.SAVE_REFLECTION}
-            onPress={handleSaveReflection}
-            variant="primary"
-            fullWidth={false}
-            style={styles.saveButton}
-            textStyle={styles.saveButtonText}
-          />
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <CustomButton
+              title={JOURNEY.DOWNLOAD_PDF}
+              onPress={handleDownloadPDF}
+              variant="secondary"
+              fullWidth={false}
+              style={styles.downloadButton}
+              textStyle={styles.downloadButtonText}
+            />
+            <CustomButton
+              title={JOURNEY.SAVE_REFLECTION}
+              onPress={handleSaveReflection}
+              variant="primary"
+              fullWidth={false}
+              style={styles.saveButton}
+              textStyle={styles.saveButtonText}
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -257,14 +260,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: scale(24),
     paddingTop: scale(24),
-    paddingBottom: scale(220), // Extra padding for bottom navigation buttons
+    paddingBottom: scale(120), // Extra padding for bottom navigation buttons
   },
   section: {
     ...commonStyles.mb24,
   },
   sectionTitle: {
     ...commonStyles.subtitle18Black,
-    color: COLORS.TEXT_DARK,
+    color: COLORS.PRIMARY,
     ...commonStyles.mb12,
   },
   bulletPoint: {
@@ -273,7 +276,7 @@ const styles = StyleSheet.create({
   },
   bullet: {
     fontSize: scaleFont(16),
-    color: COLORS.PRIMARY,
+    color: COLORS.TEXT_PRIMARY,
     marginRight: scale(8),
     fontFamily: 'varela_round_regular',
   },
@@ -289,7 +292,7 @@ const styles = StyleSheet.create({
   questionNumber: {
     ...commonStyles.textSmall,
     fontWeight: '600',
-    color: COLORS.PRIMARY,
+    color: COLORS.TEXT_PRIMARY,
     marginRight: scale(8),
   },
   questionText: {
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     ...commonStyles.row,
     ...commonStyles.gap8,
-    ...commonStyles.mb24,
+    ...commonStyles.mb8,
   },
   downloadButton: {
     flex: 1,
