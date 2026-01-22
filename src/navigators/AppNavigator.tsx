@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { BackHandler, Platform, ToastAndroid } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; import { useNavigation, useRoute, NavigationProp } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useNavigation, useNavigationState, NavigationProp } from '@react-navigation/native';
 import { AppStackParamList } from './types';
 import HomeNavigator from './HomeNavigator';
 import ResourcesScreen from '../feature/resources/ResourcesScreen';
@@ -14,10 +15,33 @@ const Tab = createBottomTabNavigator<AppStackParamList>();
 const AppNavigator: React.FC = () => {
   const navigation = useNavigation<NavigationProp<AppStackParamList>>();
   const backPressCount = useRef(0);
-  const backPressTimeout = useRef<number | null>(null)
+  const backPressTimeout = useRef<number | null>(null);
+
+  // Get the current navigation state to check if we're on the Home screen
+  const navigationState = useNavigationState(state => state);
+
+  // Check if we're on the Home screen (not on any journey screens)
+  const isOnHomeScreen = () => {
+    if (!navigationState) return false;
+    
+    // Find the Home tab
+    const homeTab = navigationState.routes.find(route => route.name === 'Home');
+    if (!homeTab || !homeTab.state) return false;
+    
+    // Check if the current screen in the Home stack is 'Home'
+    const currentRoute = homeTab.state.routes[homeTab.state.index];
+    return currentRoute?.name === 'Home';
+  };
 
   useEffect(() => {
     const onBackPress = () => {
+      // Only show exit confirmation if we're on the Home screen
+      if (!isOnHomeScreen()) {
+        // Let React Navigation handle the back button normally
+        return false;
+      }
+
+      // We're on the Home screen, show exit confirmation
       backPressCount.current += 1;
 
       if (backPressCount.current === 1) {
@@ -55,7 +79,7 @@ const AppNavigator: React.FC = () => {
         clearTimeout(backPressTimeout.current);
       }
     };
-  }, []);
+  }, [navigationState]);
   
   return (
     <Tab.Navigator
