@@ -3,19 +3,27 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { CommonActions } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
 import BackButton from '../../../components/common/BackButton';
-import { SIGN_UP, ERRORS, ICONS } from '../../../constants/strings';
+import { SIGN_UP, ERRORS, ICONS, COMMON } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
+import { signUpAsync } from '../../../redux/slices/auth/authSlice';
+import { AppDispatch, RootState } from '../../../redux/store';
+import network from '../../../utils/network';
+import { LoadingModal } from '../../../components/modals';
 
 type SignUpNavigationProp = StackNavigationProp<AuthStackParamList, 'SignUp'>;
 
 const SignUp: React.FC = () => {
   const navigation = useNavigation<SignUpNavigationProp>();
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,25 +44,103 @@ const SignUp: React.FC = () => {
 
   const passwordRequirements = validatePassword(password);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
+    // Validate form fields
     if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
+      Alert.alert(
+        SIGN_UP.VALIDATION_ERROR_TITLE,
+        ERRORS.FILL_ALL_FIELDS,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert(
+        SIGN_UP.INVALID_EMAIL_TITLE,
+        ERRORS.INVALID_EMAIL,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', ERRORS.PASSWORDS_DO_NOT_MATCH);
+      Alert.alert(
+        SIGN_UP.PASSWORD_MISMATCH_TITLE,
+        ERRORS.PASSWORDS_DO_NOT_MATCH,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
       return;
     }
 
     const isValid = Object.values(passwordRequirements).every(Boolean);
     if (!isValid) {
-      Alert.alert('Error', ERRORS.PASSWORD_REQUIREMENTS);
+      Alert.alert(
+        SIGN_UP.PASSWORD_REQUIREMENTS_TITLE_ALERT,
+        ERRORS.PASSWORD_REQUIREMENTS,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
       return;
     }
 
-    // Navigate to StartMyJourney screen
-    navigation.navigate('StartMyJourney');
+    // Check internet connection
+    const isConnected = await network.isConnected();
+    if (!isConnected) {
+      Alert.alert(
+        ERRORS.NO_INTERNET_CONNECTION,
+        ERRORS.NETWORK_ERROR,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
+      return;
+    }
+
+    // Call signup API
+    try {
+      const result = await dispatch(
+        signUpAsync({
+          name: fullName,
+          email: email.trim().toLowerCase(),
+          password: password,
+          password_confirmation: confirmPassword,
+          terms_accepted: '1',
+        })
+      ).unwrap();
+
+      // Signup successful - navigate to JourneyStart and reset stack
+      // This prevents returning to signup screen
+      console.log('Signup successful, navigating to JourneyStart with reset stack');
+      
+      // Reset navigation stack and navigate to JourneyStart
+      // Small delay to ensure Redux state is updated
+      setTimeout(() => {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 1,
+            routes: [{ name: 'JourneyStart' }],
+          })
+        );
+      }, 100);
+    } catch (error: any) {
+      // Extract user-friendly error message
+      let errorMessage: string = SIGN_UP.SIGN_UP_FAILED_MESSAGE;
+      
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      }
+      
+      // Show user-friendly error alert
+      Alert.alert(
+        SIGN_UP.SIGN_UP_FAILED_TITLE,
+        errorMessage,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
+    }
   };
 
   const handleBack = () => {
@@ -79,6 +165,12 @@ const SignUp: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={SIGN_UP.LOADING_MESSAGE}
+      />
+
       <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={[commonStyles.contentTransparent, { paddingBottom: scale(60) }]}>
           {/* Back Arrow */}
@@ -175,6 +267,8 @@ const SignUp: React.FC = () => {
               title={SIGN_UP.CREATE_ACCOUNT}
               onPress={handleSignUp}
               style={{ marginTop: scale(24) }}
+              disabled={isLoading}
+              loading={isLoading}
             />
           </View>
         </View>

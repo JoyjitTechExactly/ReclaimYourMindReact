@@ -11,7 +11,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleFont } from '../../utils/scaling';
 
-type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Home'>;
+type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Dashboard'>;
 
 const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();

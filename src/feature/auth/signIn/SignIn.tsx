@@ -3,48 +3,60 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
 import BackButton from '../../../components/common/BackButton';
-import { SIGN_IN, ERRORS, ICONS } from '../../../constants/strings';
+import { SIGN_IN, ERRORS, ICONS, COMMON } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
-import { loginSuccess, loginFailure } from '../../../redux/slices/auth/authSlice';
+import { loginAsync } from '../../../redux/slices/auth/authSlice';
+import { AppDispatch, RootState } from '../../../redux/store';
+import { LoadingModal } from '../../../components/modals';
 
 type SignInNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
 
 const SignIn: React.FC = () => {
   const navigation = useNavigation<SignInNavigationProp>();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!email || !password) {
-      Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
+      Alert.alert(ERRORS.ERROR_TITLE, ERRORS.FILL_ALL_FIELDS);
       return;
     }
     
-    // Simulate successful login - in real app, this would be an API call
     try {
-      const user = {
-        email: email,
-        name: email.split('@')[0], // Extract name from email for demo
-      };
-      const token = 'mock-jwt-token-' + Date.now();
+      // Dispatch async thunk - API call is handled in the service layer
+      await dispatch(loginAsync({ email, password })).unwrap();
       
-      // Dispatch login success to Redux
-      dispatch(loginSuccess({ user, token }));
-      
-      // Navigation will be handled automatically by RootNavigator
+      // Login successful - navigation will be handled automatically by RootNavigator
+      // based on isAuthenticated state change
       console.log('Login successful for:', email);
-    } catch (error) {
-      dispatch(loginFailure('Login failed. Please try again.'));
-      Alert.alert('Error', 'Login failed. Please try again.');
+    } catch (error: any) {
+      // Extract user-friendly error message
+      let errorMessage: string = SIGN_IN.LOGIN_FAILED_MESSAGE;
+      
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      }
+      
+      // Show user-friendly error alert
+      Alert.alert(
+        SIGN_IN.LOGIN_FAILED_TITLE,
+        errorMessage,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
     }
   };
 
@@ -62,6 +74,12 @@ const SignIn: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={SIGN_IN.LOADING_MESSAGE}
+      />
+      
       <View style={commonStyles.contentTransparent}>
         {/* Back Arrow */}
         <BackButton onPress={handleBack} />
@@ -117,6 +135,8 @@ const SignIn: React.FC = () => {
             title={SIGN_IN.LOGIN_BUTTON}
             onPress={handleSignIn}
             style={{ marginTop: scale(24) }}
+            disabled={isLoading}
+            loading={isLoading}
           />
         </View>
       </View>

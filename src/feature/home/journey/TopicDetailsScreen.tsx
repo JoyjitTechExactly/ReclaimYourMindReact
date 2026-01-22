@@ -99,7 +99,7 @@ const TopicDetailsScreen: React.FC = () => {
               if (navigation.canGoBack()) {
                 navigation.goBack();
               } else {
-                navigation.navigate('Home');
+                navigation.navigate('Dashboard');
               }
             }}
             bottomMargin={0}

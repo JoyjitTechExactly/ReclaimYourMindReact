@@ -13,12 +13,12 @@ const Stack = createStackNavigator<AppStackParamList>();
 const HomeNavigator: React.FC = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Home"
+      initialRouteName="Dashboard"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Dashboard" component={HomeScreen} />
       <Stack.Screen name="ActionIntro" component={ActionIntroScreen} />
       <Stack.Screen name="TopicListing" component={TopicListingScreen} />
       <Stack.Screen name="TopicDetails" component={TopicDetailsScreen} />

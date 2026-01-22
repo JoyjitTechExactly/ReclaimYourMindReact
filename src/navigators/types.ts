@@ -2,8 +2,8 @@ export type AuthStackParamList = {
   Onboard: undefined;
   SignIn: undefined;
   SignUp: undefined;
-  StartMyJourney: undefined;
-  SignUpConfirmation: undefined;
+  JourneyStart: undefined; // StartMyJourney screen
+  JourneyCompletion: undefined; // SignUpConfirmation screen
   ForgotPassword: undefined;
   OTP: { email: string };
   ResetPassword: { email: string };
@@ -12,7 +12,7 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   // Tab Navigator Screens
-  Home: undefined;
+  Dashboard: undefined;
   Resources: undefined;
   Journal: undefined;
   Profile: undefined;

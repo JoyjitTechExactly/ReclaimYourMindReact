@@ -20,17 +20,17 @@ const AppNavigator: React.FC = () => {
   // Get the current navigation state to check if we're on the Home screen
   const navigationState = useNavigationState(state => state);
 
-  // Check if we're on the Home screen (not on any journey screens)
+  // Check if we're on the Dashboard screen (not on any journey screens)
   const isOnHomeScreen = () => {
     if (!navigationState) return false;
     
-    // Find the Home tab
-    const homeTab = navigationState.routes.find(route => route.name === 'Home');
-    if (!homeTab || !homeTab.state) return false;
+    // Find the Dashboard tab
+    const homeTab = navigationState.routes.find(route => route.name === 'Dashboard');
+    if (!homeTab || !homeTab.state || homeTab.state.index === undefined) return false;
     
-    // Check if the current screen in the Home stack is 'Home'
+    // Check if the current screen in the Dashboard stack is 'Dashboard'
     const currentRoute = homeTab.state.routes[homeTab.state.index];
-    return currentRoute?.name === 'Home';
+    return currentRoute?.name === 'Dashboard';
   };
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const AppNavigator: React.FC = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="Dashboard"
         component={HomeNavigator}
         options={{
           tabBarLabel: 'Home',

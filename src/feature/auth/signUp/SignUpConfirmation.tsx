@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, ScrollView, BackHandler } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -12,27 +12,20 @@ import BackButton from '../../../components/common/BackButton';
 import { SIGN_UP } from '../../../constants/strings';
 import SwipeButton from '../../../components/auth/SwipeButton';
 import { commonStyles } from '../../../styles/commonStyles';
-import { signUpSuccess } from '../../../redux/slices/auth/authSlice';
-
-type SignUpConfirmationNavigationProp = StackNavigationProp<AuthStackParamList, 'SignUpConfirmation'>;
+import { setAccountCreationComplete } from '../../../redux/slices/auth/authSlice';
+import { AppDispatch, RootState } from '../../../redux/store';
+type SignUpConfirmationNavigationProp = StackNavigationProp<AuthStackParamList, 'JourneyCompletion'>;
 
 const SignUpConfirmation: React.FC = () => {
   const navigation = useNavigation<SignUpConfirmationNavigationProp>();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const handleContinue = () => {
-    // Simulate successful sign up - in real app, this would get user data from previous steps
-    const user = {
-      email: 'user@example.com', // This would come from sign up form
-      name: 'New User', // This would come from sign up form
-    };
-    const token = 'mock-jwt-token-' + Date.now();
-    
-    // Dispatch sign up success to Redux
-    dispatch(signUpSuccess({ user, token }));
-    
-    // Navigation will be handled automatically by RootNavigator
-    console.log('Sign up successful, navigating to dashboard');
+    // Mark account creation flow as complete
+    // RootNavigator will automatically switch to App navigator when isAccountCreationComplete is true
+    // No manual navigation needed - the conditional rendering in RootNavigator handles the switch
+    dispatch(setAccountCreationComplete(true));
   };
 
   const insets = useSafeAreaInsets();

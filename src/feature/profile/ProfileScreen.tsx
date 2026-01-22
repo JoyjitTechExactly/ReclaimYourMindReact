@@ -3,22 +3,26 @@ import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
-import { PROFILE } from '../../constants/strings';
+import { ERRORS, PROFILE, COMMON } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
-import { logout } from '../../redux/slices/auth/authSlice';
+import { logout, logoutAsync } from '../../redux/slices/auth/authSlice';
 import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
+import { LoadingModal } from '../../components/modals';
+import network from '../../utils/network';
+import { AppDispatch, RootState } from '../../redux/store';
 
 type ProfileNavigationProp = StackNavigationProp<AppStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading } = useSelector((state: RootState) => state.auth);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -39,8 +43,42 @@ const ProfileScreen: React.FC = () => {
         {
           text: PROFILE.LOGOUT,
           style: 'destructive',
-          onPress: () => {
-            dispatch(logout());
+          onPress: async () => {
+            // Check internet connection
+            const isConnected = await network.isConnected();
+            if (!isConnected) {
+              Alert.alert(
+                ERRORS.NO_INTERNET_CONNECTION,
+                ERRORS.NETWORK_ERROR,
+                [{ text: COMMON.OK, style: 'default' }]
+              );
+              return;
+            }
+            
+            try {
+              // Call logout API
+              await dispatch(logoutAsync()).unwrap();
+              // Logout successful - navigation will be handled automatically by RootNavigator
+              // based on isAuthenticated state change
+            } catch (error: any) {
+              // Extract user-friendly error message
+              let errorMessage: string = PROFILE.LOGOUT_FAILED_MESSAGE;
+              
+              if (typeof error === 'string') {
+                errorMessage = error;
+              } else if (error?.message) {
+                errorMessage = error.message;
+              } else if (error?.error) {
+                errorMessage = error.error;
+              }
+              
+              // Show user-friendly error alert
+              Alert.alert(
+                PROFILE.LOGOUT_FAILED_TITLE,
+                errorMessage,
+                [{ text: COMMON.OK, style: 'default' }]
+              );
+            }
           },
         },
       ]
@@ -116,6 +154,12 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={PROFILE.LOADING_MESSAGE}
+      />
+      
       {/* User Profile Header */}
       <View style={[commonStyles.fixedHeader, styles.profileHeader]}>
         <View style={styles.userInfo}>
@@ -204,24 +248,24 @@ const ProfileScreen: React.FC = () => {
 
             {/* Allow Notifications */}
             <View style={styles.listCard}>
-                <View style={[styles.listItem, styles.listItemLast]}>
-                  <View style={styles.listItemLeft}>
-                    <Image source={ImagePath.Info} style={styles.listItemIcon} resizeMode="contain" />
-                    <View style={styles.listItemTextContainer}>
-                      <Text style={styles.listItemTitle}>{PROFILE.ALLOW_NOTIFICATIONS}</Text>
-                      <Text style={styles.listItemSubtitle}>{PROFILE.NOTIFICATIONS_SUBTITLE}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.listItemRight}>
-                    <Switch
-                      value={notificationsEnabled}
-                      onValueChange={setNotificationsEnabled}
-                      trackColor={{ false: COLORS.BORDER_LIGHT, true: COLORS.PRIMARY }}
-                      thumbColor={COLORS.WHITE}
-                    />
+              <View style={[styles.listItem, styles.listItemLast]}>
+                <View style={styles.listItemLeft}>
+                  <Image source={ImagePath.Info} style={styles.listItemIcon} resizeMode="contain" />
+                  <View style={styles.listItemTextContainer}>
+                    <Text style={styles.listItemTitle}>{PROFILE.ALLOW_NOTIFICATIONS}</Text>
+                    <Text style={styles.listItemSubtitle}>{PROFILE.NOTIFICATIONS_SUBTITLE}</Text>
                   </View>
                 </View>
+                <View style={styles.listItemRight}>
+                  <Switch
+                    value={notificationsEnabled}
+                    onValueChange={setNotificationsEnabled}
+                    trackColor={{ false: COLORS.BORDER_LIGHT, true: COLORS.PRIMARY }}
+                    thumbColor={COLORS.WHITE}
+                  />
+                </View>
               </View>
+            </View>
 
             <View style={{ marginBottom: scale(120) }} />
           </View>

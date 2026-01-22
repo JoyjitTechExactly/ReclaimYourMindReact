@@ -42,7 +42,7 @@ const CustomTabBar: React.FC<TabBarProps> = ({ state, descriptors, navigation })
   }
 
   const tabs = [
-    { key: 'Home', label: 'Home', icon: ImagePath.HomeIcon },
+    { key: 'Dashboard', label: 'Home', icon: ImagePath.HomeIcon },
     { key: 'Resources', label: 'Resources', icon: ImagePath.ResourcesIcon },
     { key: 'Journal', label: 'Journal', icon: ImagePath.JournalIcon },
     { key: 'Profile', label: 'Profile', icon: ImagePath.ProfileIcon },

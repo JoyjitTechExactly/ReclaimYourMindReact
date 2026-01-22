@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Pressable, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator, View } from 'react-native';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
 
@@ -8,6 +8,7 @@ interface DefaultButtonProps {
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'ghost' | 'login';
   disabled?: boolean;
+  loading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
@@ -18,6 +19,7 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
   onPress,
   variant = 'primary',
   disabled = false,
+  loading = false,
   style,
   textStyle,
   fullWidth = true,
@@ -31,9 +33,9 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
     variant === 'ghost' ? styles.ghostButton :
     variant === 'login' ? styles.loginButton :
     styles.primaryButton,
-    disabled && styles.disabledButton,
+    (disabled || loading) && styles.disabledButton,
     fullWidth && styles.fullWidth,
-    isHovered && !disabled && styles.hovered,
+    isHovered && !disabled && !loading && styles.hovered,
     style,
   ];
 
@@ -44,22 +46,35 @@ const CustomButton: React.FC<DefaultButtonProps> = ({
     variant === 'ghost' ? styles.ghostButtonText :
     variant === 'login' ? styles.loginButtonText :
     styles.primaryButtonText,
-    disabled && styles.disabledButtonText,
+    (disabled || loading) && styles.disabledButtonText,
     textStyle,
   ];
+
+  const getIndicatorColor = () => {
+    if (variant === 'primary' || variant === 'login') {
+      return COLORS.WHITE;
+    }
+    return COLORS.PRIMARY;
+  };
 
   return (
     <Pressable
       style={({ pressed }) => [
         ...buttonStyle,
-        pressed && !disabled && styles.pressed,
+        pressed && !disabled && !loading && styles.pressed,
       ]}
       onPress={onPress}
-      disabled={disabled}
-      onHoverIn={() => !disabled && setIsHovered(true)}
+      disabled={disabled || loading}
+      onHoverIn={() => !disabled && !loading && setIsHovered(true)}
       onHoverOut={() => setIsHovered(false)}
     >
-      <Text style={buttonTextStyle}>{title}</Text>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={getIndicatorColor()} />
+        </View>
+      ) : (
+        <Text style={buttonTextStyle}>{title}</Text>
+      )}
     </Pressable>
   );
 };
@@ -136,6 +151,10 @@ const styles = StyleSheet.create({
   },
   disabledButtonText: {
     color: COLORS.WHITE,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

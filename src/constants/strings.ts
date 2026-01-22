@@ -21,6 +21,9 @@ export const SIGN_IN = {
   PASSWORD_PLACEHOLDER: 'Enter your password',
   FORGOT_PASSWORD: 'Forgot Password?',
   LOGIN_BUTTON: 'Log In',
+  LOADING_MESSAGE: 'Signing in...',
+  LOGIN_FAILED_TITLE: 'Login Failed',
+  LOGIN_FAILED_MESSAGE: 'Login failed. Please check your credentials and try again.',
 } as const;
 
 // Forgot Password Screen
@@ -83,6 +86,13 @@ export const SIGN_UP = {
   REQUIREMENT_NUMBER: 'One number',
   REQUIREMENT_SPECIAL: 'One special character',
   CREATE_ACCOUNT: 'Create Account',
+  LOADING_MESSAGE: 'Creating your account...',
+  VALIDATION_ERROR_TITLE: 'Validation Error',
+  INVALID_EMAIL_TITLE: 'Invalid Email',
+  PASSWORD_MISMATCH_TITLE: 'Password Mismatch',
+  PASSWORD_REQUIREMENTS_TITLE_ALERT: 'Password Requirements',
+  SIGN_UP_FAILED_TITLE: 'Sign Up Failed',
+  SIGN_UP_FAILED_MESSAGE: 'Sign up failed. Please try again.',
   START_JOURNEY: {
     TITLE: 'Your Empowerment Journey',
     SUBTITLE: 'This journey will help you identify emotional abuse, process your feelings, learn healthy relationship strategies, and move toward growth and healing.',
@@ -142,6 +152,15 @@ export const ERRORS = {
   FILL_ALL_FIELDS: 'Please fill in all fields',
   PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
   PASSWORD_REQUIREMENTS: 'Password does not meet all requirements',
+  NETWORK_ERROR: 'Network error. Please check your internet connection and try again.',
+  SERVER_ERROR: 'Server error. Please try again later.',
+  UNKNOWN_ERROR: 'An unexpected error occurred. Please try again.',
+  EMAIL_ALREADY_EXISTS: 'This email is already registered. Please use a different email or sign in.',
+  INVALID_EMAIL: 'Please enter a valid email address.',
+  WEAK_PASSWORD: 'Password is too weak. Please use a stronger password.',
+  INVALID_CREDENTIALS: 'Invalid email or password. Please check your credentials and try again.',
+  ERROR_TITLE: 'Error',
+  NO_INTERNET_CONNECTION: 'No Internet Connection',
 } as const;
 
 // Swipe Button Component
@@ -246,11 +265,19 @@ export const PROFILE = {
   // Alert Messages
   LOGOUT_TITLE: 'Logout',
   LOGOUT_MESSAGE: 'Are you sure you want to logout?',
+  LOADING_MESSAGE: 'Logging out...',
+  LOGOUT_FAILED_TITLE: 'Logout Failed',
+  LOGOUT_FAILED_MESSAGE: 'Logout failed. Please try again.',
   EXPORT_JOURNALS_TITLE: 'Export Journals',
   EXPORT_JOURNALS_MESSAGE: 'Journal export functionality will be implemented here.',
   ERROR_TITLE: 'Error',
   PRIVACY_POLICY_ERROR: 'Could not open privacy policy link.',
   TERMS_ERROR: 'Could not open terms and condition link.',
+} as const;
+
+// Common UI Strings
+export const COMMON = {
+  OK: 'OK',
 } as const;
 
 // Journey Screens

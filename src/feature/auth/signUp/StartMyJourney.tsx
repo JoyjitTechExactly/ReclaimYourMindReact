@@ -20,7 +20,7 @@ import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
 import { JOURNEY_STEPS, JourneyStep } from '../../../constants/constantData';
 
-type StartMyJourneyNavigationProp = StackNavigationProp<AuthStackParamList, 'StartMyJourney'>;
+type StartMyJourneyNavigationProp = StackNavigationProp<AuthStackParamList, 'JourneyStart'>;
 
 interface JourneyStepItemProps {
   step: JourneyStep;
@@ -50,11 +50,13 @@ const StartMyJourney: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   const handleGetStarted = () => {
-    navigation.navigate('SignUpConfirmation');
+    // Navigate directly to JourneyCompletion (SignUpConfirmation)
+    navigation.navigate('JourneyCompletion');
   };
 
   const handleBack = () => {
-    navigation.goBack();
+    // Back → Onboarding page
+    navigation.navigate('Onboard');
   };
 
   const handlePlayVideo = () => {
