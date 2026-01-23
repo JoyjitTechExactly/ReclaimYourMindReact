@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { appService } from '../../../network/services';
+import { profileService } from '../../../network/services';
 import storage from '../../../utils/storage';
 
 interface ProfileState {
@@ -18,13 +18,13 @@ const initialState: ProfileState = {
 
 // Async Thunks
 export const updateProfileAsync = createAsyncThunk(
-  'profile/updateProfile',
+  'user/manage-account',
   async (
     { name, email }: { name: string; email: string },
     { rejectWithValue }
   ) => {
     try {
-      const response = await appService.updateProfile({ name, email });
+      const response = await profileService.updateProfile({ name, email });
       if (response.success && response.data) {
         // Store updated access_token in AsyncStorage
         await storage.setAccessToken(response.data.access_token);
@@ -45,6 +45,21 @@ export const updateProfileAsync = createAsyncThunk(
       return rejectWithValue(response.error || response.message || 'Profile update failed');
     } catch (error: any) {
       return rejectWithValue(error.message || 'Profile update failed');
+    }
+  }
+);
+
+export const deleteAccountAsync = createAsyncThunk(
+  'user/delete-account',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await profileService.deleteAccount();
+      if (response.success) {
+        return response.data;
+      }
+      return rejectWithValue(response.error || response.message || 'Account deletion failed');
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Account deletion failed');
     }
   }
 );
@@ -83,6 +98,22 @@ const profileSlice = createSlice({
       .addCase(updateProfileAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.isUpdating = false;
+        state.error = action.payload as string;
+        state.success = false;
+      })
+      // Delete Account
+      .addCase(deleteAccountAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(deleteAccountAsync.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+        state.success = true;
+      })
+      .addCase(deleteAccountAsync.rejected, (state, action) => {
+        state.isLoading = false;
         state.error = action.payload as string;
         state.success = false;
       });

@@ -10,6 +10,7 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import { logout, logoutAsync } from '../../redux/slices/auth/authSlice';
+import { deleteAccountAsync } from '../../redux/slices/profile/profileSlice';
 import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
 import { LoadingModal } from '../../components/modals';
 import network from '../../utils/network';
@@ -22,12 +23,26 @@ const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state) => state.auth);
+  const { isLoading: isAuthLoading } = useAppSelector((state) => state.auth);
+  const { isLoading: isProfileLoading } = useAppSelector((state) => state.profile);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { user } = useAppSelector((state) => state.auth);
-
+  
+  // Show loading when any API call is in progress
+  const isLoading = isAuthLoading || isProfileLoading;
+  
+  // Determine loading message based on which operation is in progress
+  const getLoadingMessage = () => {
+    if (isProfileLoading) {
+      return PROFILE.DELETE_ACCOUNT_LOADING_MESSAGE;
+    }
+    if (isAuthLoading) {
+      return PROFILE.LOADING_MESSAGE; // For logout
+    }
+    return PROFILE.LOADING_MESSAGE;
+  };
   // Initialize with user data from Redux or storage
   const [fullName, setFullName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -122,10 +137,22 @@ const ProfileScreen: React.FC = () => {
     Alert.alert(PROFILE.EXPORT_JOURNALS_TITLE, PROFILE.EXPORT_JOURNALS_MESSAGE);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     setShowDeleteModal(false);
-    // Dispatch logout action which will navigate to login screen
-    dispatch(logout());
+    try {
+      await dispatch(deleteAccountAsync()).unwrap();
+      dispatch(logout());
+    } catch (error: any) {
+      let errorMessage: string = PROFILE.DELETE_ACCOUNT_ERROR;
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      }
+      Alert.alert(PROFILE.ERROR_TITLE, errorMessage);
+    }
   };
 
   const handleCancelDelete = () => {
@@ -184,7 +211,7 @@ const ProfileScreen: React.FC = () => {
       {/* Loading Modal */}
       <LoadingModal
         visible={isLoading}
-        message={PROFILE.LOADING_MESSAGE}
+        message={getLoadingMessage()}
       />
 
       {/* User Profile Header */}

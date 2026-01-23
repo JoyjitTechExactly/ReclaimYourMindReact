@@ -285,6 +285,7 @@ export const PROFILE = {
   LOGOUT_TITLE: 'Logout',
   LOGOUT_MESSAGE: 'Are you sure you want to logout?',
   LOADING_MESSAGE: 'Updating profile...',
+  DELETE_ACCOUNT_LOADING_MESSAGE: 'Deleting account...',
   LOGOUT_FAILED_TITLE: 'Logout Failed',
   LOGOUT_FAILED_MESSAGE: 'Logout failed. Please try again.',
   UPDATE_PROFILE_FAILED_TITLE: 'Update Profile Failed',
@@ -294,6 +295,9 @@ export const PROFILE = {
   ERROR_TITLE: 'Error',
   PRIVACY_POLICY_ERROR: 'Could not open privacy policy link.',
   TERMS_ERROR: 'Could not open terms and condition link.',
+  DELETE_ACCOUNT_ERROR: 'Account deletion failed. Please try again.',
+  DELETE_ACCOUNT_SUCCESS: 'Account deleted successfully.',
+  DELETE_ACCOUNT_SUCCESS_MESSAGE: 'Account deleted successfully. You will be logged out and redirected to the login screen.',
 } as const;
 
 // Common UI Strings
