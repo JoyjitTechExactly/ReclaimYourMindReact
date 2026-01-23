@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +10,8 @@ import { homeJourneyStages } from '../../constants/constantData';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleFont } from '../../utils/scaling';
+import { useAppSelector } from '../../redux/hooks';
+import storage from '../../utils/storage';
 
 type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Dashboard'>;
 
@@ -17,6 +19,30 @@ const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<HomeNavigationProp>();
   const overallProgress = 0.41; // 41%
+
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Initialize with user data from Redux or storage
+  const [fullName, setFullName] = useState(user?.name || '');
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user || !user.name || !user.email) {
+        try {
+          const storedUser = await storage.getUser();
+          if (storedUser) {
+            setFullName(storedUser.name || '');
+          }
+        } catch (error) {
+          console.error('Error loading user data from storage:', error);
+        }
+      } else {
+        // Use Redux user data
+        setFullName(user.name);
+      }
+    };
+    loadUserData();
+  }, [user]);
 
   const handleStepPress = (step: typeof homeJourneyStages[0]) => {
     const stepType = step.title as 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action';
@@ -32,9 +58,6 @@ const HomeScreen: React.FC = () => {
       });
     }
   };
-
-  // Find the next incomplete stage
-  const nextStage = homeJourneyStages.find(stage => stage.progress > 0 && stage.progress < stage.total) || homeJourneyStages[0];
 
   const renderProgressBar = (progress: number) => {
     return (
@@ -117,7 +140,7 @@ const HomeScreen: React.FC = () => {
   const headerContent = (
     <>
       <Text style={[commonStyles.headerWeclomeNote, { color: COLORS.SECONDARY }]}>{HOME.WELCOME_BACK}</Text>
-      <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY }]}>{HOME.USER_NAME}</Text>
+      <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY }]}>{fullName} 👋</Text>
       <Text style={[commonStyles.headerSubtitle, { color: COLORS.TEXT_MUTED }]}>{HOME.HEADER_SUBTITLE}</Text>
     </>
   );

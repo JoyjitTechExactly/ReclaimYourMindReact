@@ -1,5 +1,6 @@
 // Export all services from a single entry point
 export { default as authService } from './authService';
+export { default as appService } from './appService';
 
 // Add other services here as you create them
 // export { default as userService } from './userService';

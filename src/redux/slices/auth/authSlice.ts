@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../../../network/services';
 import { LoginRequest, SignUpRequest, AuthResponse, SignUpResponseData } from '../../../network/types';
 import storage from '../../../utils/storage';
+import { updateProfileAsync } from '../profile/profileSlice';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -302,6 +303,19 @@ const authSlice = createSlice({
       .addCase(resetPasswordAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      });
+
+    // Listen to profile update to sync auth state
+    builder
+      .addCase(updateProfileAsync.fulfilled, (state, action) => {
+        // Update auth state when profile is updated
+        state.user = {
+          id: action.payload.user.id,
+          name: action.payload.user.name,
+          email: action.payload.user.email,
+        };
+        state.token = action.payload.access_token;
+        state.accessToken = action.payload.access_token;
       });
 
     // Restore Auth State

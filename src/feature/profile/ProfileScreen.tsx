@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, Image, Switch, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
 import { LoadingModal } from '../../components/modals';
 import network from '../../utils/network';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import storage from '../../utils/storage';
 
 type ProfileNavigationProp = StackNavigationProp<AppStackParamList, 'Profile'>;
 
@@ -24,6 +25,33 @@ const ProfileScreen: React.FC = () => {
   const { isLoading } = useAppSelector((state) => state.auth);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Initialize with user data from Redux or storage
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user || !user.name || !user.email) {
+        try {
+          const storedUser = await storage.getUser();
+          if (storedUser) {
+            setFullName(storedUser.name || '');
+            setEmail(storedUser.email || '');
+          }
+        } catch (error) {
+          console.error('Error loading user data from storage:', error);
+        }
+      } else {
+        // Use Redux user data
+        setFullName(user.name);
+        setEmail(user.email);
+      }
+    };
+    loadUserData();
+  }, [user]);
 
   const handleEditProfile = () => {
     navigation.navigate('EditProfile');
@@ -53,7 +81,7 @@ const ProfileScreen: React.FC = () => {
               );
               return;
             }
-            
+
             try {
               // Call logout API
               await dispatch(logoutAsync()).unwrap();
@@ -62,7 +90,7 @@ const ProfileScreen: React.FC = () => {
             } catch (error: any) {
               // Extract user-friendly error message
               let errorMessage: string = PROFILE.LOGOUT_FAILED_MESSAGE;
-              
+
               if (typeof error === 'string') {
                 errorMessage = error;
               } else if (error?.message) {
@@ -70,7 +98,7 @@ const ProfileScreen: React.FC = () => {
               } else if (error?.error) {
                 errorMessage = error.error;
               }
-              
+
               // Show user-friendly error alert
               Alert.alert(
                 PROFILE.LOGOUT_FAILED_TITLE,
@@ -158,12 +186,12 @@ const ProfileScreen: React.FC = () => {
         visible={isLoading}
         message={PROFILE.LOADING_MESSAGE}
       />
-      
+
       {/* User Profile Header */}
       <View style={[commonStyles.fixedHeader, styles.profileHeader]}>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{PROFILE.DEFAULT_USER_NAME}</Text>
-          <Text style={styles.userEmail}>{PROFILE.DEFAULT_USER_EMAIL}</Text>
+          <Text style={styles.userName}>{fullName}</Text>
+          <Text style={styles.userEmail}>{email}</Text>
         </View>
         <TouchableOpacity
           style={styles.editProfileButton}

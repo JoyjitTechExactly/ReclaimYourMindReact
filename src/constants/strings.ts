@@ -284,9 +284,11 @@ export const PROFILE = {
   // Alert Messages
   LOGOUT_TITLE: 'Logout',
   LOGOUT_MESSAGE: 'Are you sure you want to logout?',
-  LOADING_MESSAGE: 'Logging out...',
+  LOADING_MESSAGE: 'Updating profile...',
   LOGOUT_FAILED_TITLE: 'Logout Failed',
   LOGOUT_FAILED_MESSAGE: 'Logout failed. Please try again.',
+  UPDATE_PROFILE_FAILED_TITLE: 'Update Profile Failed',
+  UPDATE_PROFILE_FAILED_MESSAGE: 'Profile update failed. Please try again.',
   EXPORT_JOURNALS_TITLE: 'Export Journals',
   EXPORT_JOURNALS_MESSAGE: 'Journal export functionality will be implemented here.',
   ERROR_TITLE: 'Error',
