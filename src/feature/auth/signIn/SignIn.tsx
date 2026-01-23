@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch, useSelector } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -13,15 +12,15 @@ import { SIGN_IN, ERRORS, ICONS, COMMON } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
 import { loginAsync } from '../../../redux/slices/auth/authSlice';
-import { AppDispatch, RootState } from '../../../redux/store';
 import { LoadingModal } from '../../../components/modals';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 
 type SignInNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
 
 const SignIn: React.FC = () => {
   const navigation = useNavigation<SignInNavigationProp>();
-  const dispatch = useDispatch<AppDispatch>();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { isLoading, error } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

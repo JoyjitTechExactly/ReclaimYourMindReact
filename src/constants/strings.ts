@@ -34,14 +34,30 @@ export const FORGOT_PASSWORD = {
   EMAIL_PLACEHOLDER: 'Enter your email',
   INFO_TEXT: "We'll send you a 6-digit verification code to reset your password securely.",
   SEND_CODE_BUTTON: 'Send Reset Code',
+  LOADING_MESSAGE: 'Sending reset code...',
+
+  FORGOT_PASSWORD_FAILED_TITLE: 'Forgot Password Failed',
+  FORGOT_PASSWORD_FAILED_MESSAGE: 'Forgot password failed. Please try again.',
+  INVALID_EMAIL_MESSAGE: 'Please enter a valid email address',
+  FORGOT_PASSWORD_SUCCESS_TITLE: 'Forgot Password Success',
+  FORGOT_PASSWORD_SUCCESS_MESSAGE: 'Forgot password success. Please check your email for the reset code.',
 } as const;
 
 // OTP Screen
 export const OTP_CONSTANTS = {
   TITLE: 'Verify Your Account',
+  LOADING_MESSAGE: 'Verifying code...',
+  SUCCESS_TITLE: 'Success',
+  SUCCESS_MESSAGE: 'Code resent successfully',
   SUBTITLE: "We've sent a 6-digit verification code to your email. Please enter it below to continue.",
   VERIFY_BUTTON: 'Verify Code',
   RESEND_TEXT: "Didn't receive the code?",
+  RESEND_LIMIT_REACHED: 'You have reached the maximum number of resend attempts. Please try again later.',
+  RESEND_LIMIT_TITLE: 'Resend Limit Reached',
+  VERIFY_CODE_FAILED_TITLE: 'Verify Code Failed',
+  VERIFY_CODE_FAILED_MESSAGE: 'Verify code failed. Please try again.',
+  OTP_RESEND_FAILED_TITLE: 'OTP Resend Failed',
+  OTP_RESEND_FAILED_MESSAGE: 'OTP resend failed. Please try again.',
 } as const;
 
 // Reset Password Screen
@@ -58,6 +74,9 @@ export const RESET_PASSWORD = {
   REQUIREMENT_NUMBER: 'One number',
   REQUIREMENT_SPECIAL: 'One special character',
   SAVE_BUTTON: 'Save New Password',
+  LOADING_MESSAGE: 'Resetting password...',
+  RESET_PASSWORD_FAILED_TITLE: 'Reset Password Failed',
+  RESET_PASSWORD_FAILED_MESSAGE: 'Password reset failed. Please try again.',
 } as const;
 
 // Password Confirmation Screen

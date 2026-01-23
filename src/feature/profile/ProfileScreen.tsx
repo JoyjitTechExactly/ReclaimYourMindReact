@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch, useSelector } from 'react-redux';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
 import { ERRORS, PROFILE, COMMON } from '../../constants/strings';
@@ -14,15 +13,15 @@ import { logout, logoutAsync } from '../../redux/slices/auth/authSlice';
 import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
 import { LoadingModal } from '../../components/modals';
 import network from '../../utils/network';
-import { AppDispatch, RootState } from '../../redux/store';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 
 type ProfileNavigationProp = StackNavigationProp<AppStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProfileNavigationProp>();
-  const dispatch = useDispatch<AppDispatch>();
-  const { isLoading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.auth);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 

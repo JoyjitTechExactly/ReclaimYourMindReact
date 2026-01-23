@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useSelector } from 'react-redux';
 import { Onboard, SignIn, SignUp } from '../feature/auth';
 import { ForgotPassword, OTP, ResetPassword, PasswordConfirmation } from '../feature/auth/forgotPwd';
 import { StartMyJourney, SignUpConfirmation } from '../feature/auth/signUp';
 import { AuthStackParamList } from './types';
 import { AUTH_NAVIGATION } from '../constants/strings';
-import { RootState } from '../redux/store';
+import { useAppSelector } from '../redux/hooks';
 
 const Stack = createStackNavigator<AuthStackParamList>();
 
 const AuthNavigator: React.FC = () => {
-  const { isAuthenticated, isAccountCreationComplete } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, isAccountCreationComplete } = useAppSelector((state) => state.auth);
   
   // Calculate initial route based on auth state
   // IMPORTANT: initialRouteName only works on first mount
@@ -98,6 +97,7 @@ const AuthNavigator: React.FC = () => {
         component={PasswordConfirmation}
         options={{
           title: 'Success',
+          gestureEnabled: false,  
         }}
       />
     </Stack.Navigator>

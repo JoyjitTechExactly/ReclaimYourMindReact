@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, BackHandler } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
@@ -15,6 +15,27 @@ type PasswordConfirmationNavigationProp = StackNavigationProp<AuthStackParamList
 
 const PasswordConfirmation: React.FC = () => {
   const navigation = useNavigation<PasswordConfirmationNavigationProp>();
+
+  // Disable gesture back and hardware back button
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        return true; // Prevent back action
+      };
+
+      // Disable gesture back
+      navigation.setOptions({
+        gestureEnabled: false,
+      });
+
+      // Disable hardware back button
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        subscription.remove();
+      };
+    }, [navigation])
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -59,3 +59,11 @@ export interface AuthResponse {
   refreshToken?: string;
 }
 
+export interface VerifyOTPResponse {
+  verified: boolean;
+  email: string;
+  expires_at: string;
+  remaining_minutes: string;
+  token: string;
+}
+

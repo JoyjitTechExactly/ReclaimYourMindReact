@@ -1,18 +1,17 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useSelector } from 'react-redux';
 import AuthNavigator from './AuthNavigator';
 import AppNavigator from './AppNavigator';
-import { RootState } from '../redux/store';
 import { RootStackParamList } from './types';
 import { COLORS } from '../constants/colors';
+import { useAppSelector } from '../redux/hooks';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
   // Get authentication state from Redux
-  const { isAuthenticated, isAccountCreationComplete, isRestoring } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, isAccountCreationComplete, isRestoring } = useAppSelector((state) => state.auth);
 
   // Show loading screen while restoring auth state to prevent flicker
   if (isRestoring) {

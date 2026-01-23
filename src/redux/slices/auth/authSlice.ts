@@ -118,8 +118,8 @@ export const verifyOTPAsync = createAsyncThunk(
   'auth/verifyOTP',
   async ({ email, otp }: { email: string; otp: string }, { rejectWithValue }) => {
     const response = await authService.verifyOTP(email, otp);
-    if (response.success) {
-      return response.message || 'OTP verified successfully';
+    if (response.success && response.data) {
+      return response.data;
     }
     return rejectWithValue(response.error || response.message || 'OTP verification failed');
   }
@@ -128,10 +128,10 @@ export const verifyOTPAsync = createAsyncThunk(
 export const resetPasswordAsync = createAsyncThunk(
   'auth/resetPassword',
   async (
-    { email, otp, newPassword }: { email: string; otp: string; newPassword: string },
+    { email, token, newPassword }: { email: string; token: string; newPassword: string },
     { rejectWithValue }
   ) => {
-    const response = await authService.resetPassword(email, otp, newPassword);
+    const response = await authService.resetPassword(email, token, newPassword);
     if (response.success) {
       return response.message || 'Password reset successfully';
     }

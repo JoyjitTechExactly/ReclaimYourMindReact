@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Image, ScrollView, BackHandler } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch, useSelector } from 'react-redux';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
@@ -13,13 +12,13 @@ import { SIGN_UP } from '../../../constants/strings';
 import SwipeButton from '../../../components/auth/SwipeButton';
 import { commonStyles } from '../../../styles/commonStyles';
 import { setAccountCreationComplete } from '../../../redux/slices/auth/authSlice';
-import { AppDispatch, RootState } from '../../../redux/store';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 type SignUpConfirmationNavigationProp = StackNavigationProp<AuthStackParamList, 'JourneyCompletion'>;
 
 const SignUpConfirmation: React.FC = () => {
   const navigation = useNavigation<SignUpConfirmationNavigationProp>();
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
 
   const handleContinue = () => {
     // Mark account creation flow as complete

@@ -8,18 +8,22 @@ import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
 import BackButton from '../../../components/common/BackButton';
-import { FORGOT_PASSWORD, ERRORS } from '../../../constants/strings';
+import { FORGOT_PASSWORD, ERRORS, SIGN_IN, COMMON } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
+import { forgotPasswordAsync } from '../../../redux/slices/auth/authSlice';
+import { LoadingModal } from '../../../components/modals';
+import { useAppDispatch } from '../../../redux/hooks';
 
 type ForgotPasswordNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
 const ForgotPassword: React.FC = () => {
   const navigation = useNavigation<ForgotPasswordNavigationProp>();
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendResetCode = () => {
+  const handleSendResetCode =  async () => {
     if (!email) {
       Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
       return;
@@ -33,13 +37,34 @@ const ForgotPassword: React.FC = () => {
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await dispatch(forgotPasswordAsync(email)).unwrap();
+      
+      // Only navigate to OTP screen on success
       setIsLoading(false);
-      // Navigate to OTP screen
       navigation.navigate('OTP', { email });
-    }, 1000);
+    } catch (error: any) {
+      setIsLoading(false);
+      
+      // Extract user-friendly error message
+      let errorMessage: string = FORGOT_PASSWORD.INVALID_EMAIL_MESSAGE;
+      
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      }
+      
+      // Show user-friendly error alert
+      Alert.alert(
+        FORGOT_PASSWORD.FORGOT_PASSWORD_FAILED_TITLE,
+        errorMessage,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
+    }
   };
 
   const handleBack = () => {
@@ -50,6 +75,12 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={FORGOT_PASSWORD.LOADING_MESSAGE}
+      />
+      
       <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={[commonStyles.contentTransparent, { paddingBottom: scale(60) }]}>
           {/* Back Arrow */}
@@ -78,6 +109,7 @@ const ForgotPassword: React.FC = () => {
               title={FORGOT_PASSWORD.SEND_CODE_BUTTON}
               onPress={handleSendResetCode}
               disabled={isLoading}
+              loading={isLoading}
               style={{ marginTop: scale(24) }}
             />
 

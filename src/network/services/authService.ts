@@ -1,5 +1,5 @@
 import apiClient from '../apiClient';
-import { ApiResponse, LoginRequest, SignUpRequest, SignUpResponseData, AuthResponse } from '../types';
+import { ApiResponse, LoginRequest, SignUpRequest, SignUpResponseData, AuthResponse, VerifyOTPResponse } from '../types';
 import { AxiosError } from 'axios';
 
 /**
@@ -163,10 +163,10 @@ class AuthService {
   /**
    * Verify OTP
    */
-  async verifyOTP(email: string, otp: string): Promise<ApiResponse<void>> {
+  async verifyOTP(email: string, otp: string): Promise<ApiResponse<VerifyOTPResponse>> {
     try {
-      const response = await apiClient.post<ApiResponse<void>>(
-        '/auth/verify-otp',
+      const response = await apiClient.post<ApiResponse<VerifyOTPResponse>>(
+        '/auth/otp-verification',
         { email, otp }
       );
       return response.data;
@@ -180,13 +180,13 @@ class AuthService {
    */
   async resetPassword(
     email: string,
-    otp: string,
-    newPassword: string
+    token: string,
+    password: string
   ): Promise<ApiResponse<void>> {
     try {
       const response = await apiClient.post<ApiResponse<void>>(
         '/auth/reset-password',
-        { email, otp, newPassword }
+        { email: email, token: token, password: password, password_confirmation: password }
       );
       return response.data;
     } catch (error) {

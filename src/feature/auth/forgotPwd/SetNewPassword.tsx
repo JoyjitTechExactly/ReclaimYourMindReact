@@ -8,9 +8,12 @@ import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
 import { scale, scaleHeight, scaleFont } from '../../../utils/scaling';
 import BackButton from '../../../components/common/BackButton';
-import { RESET_PASSWORD, ERRORS } from '../../../constants/strings';
+import { RESET_PASSWORD, ERRORS, COMMON } from '../../../constants/strings';
 import CustomButton from '../../../components/common/CustomButton';
 import { commonStyles } from '../../../styles/commonStyles';
+import { resetPasswordAsync } from '../../../redux/slices/auth/authSlice';
+import { useAppDispatch } from '../../../redux/hooks';
+import { LoadingModal } from '../../../components/modals';
 
 type SetNewPasswordNavigationProp = StackNavigationProp<AuthStackParamList, 'ResetPassword'>;
 type SetNewPasswordRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;
@@ -18,7 +21,8 @@ type SetNewPasswordRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;
 const SetNewPassword: React.FC = () => {
   const navigation = useNavigation<SetNewPasswordNavigationProp>();
   const route = useRoute<SetNewPasswordRouteProp>();
-  const { email } = route.params;
+  const { email, token } = route.params;
+  const dispatch = useAppDispatch();
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -53,7 +57,7 @@ const SetNewPassword: React.FC = () => {
     </View>
   );
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     if (!password || !confirmPassword) {
       Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
       return;
@@ -71,13 +75,28 @@ const SetNewPassword: React.FC = () => {
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await dispatch(resetPasswordAsync({ email, token, newPassword: password })).unwrap();
       setIsLoading(false);
       // Navigate to Password Confirmation screen
       navigation.navigate('PasswordConfirmation');
-    }, 1000);
+    } catch (error: any) {
+      setIsLoading(false);
+      let errorMessage: string = RESET_PASSWORD.RESET_PASSWORD_FAILED_MESSAGE || 'Password reset failed. Please try again.';
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      }
+      Alert.alert(
+        RESET_PASSWORD.RESET_PASSWORD_FAILED_TITLE || 'Reset Password Failed',
+        errorMessage,
+        [{ text: COMMON.OK, style: 'default' }]
+      );
+    }
   };
 
   const handleBack = () => {
@@ -88,6 +107,12 @@ const SetNewPassword: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={RESET_PASSWORD.LOADING_MESSAGE || 'Resetting password...'}
+      />
+      
       <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={[commonStyles.contentTransparent, { paddingBottom: scale(60) }]}>
           {/* Back Arrow */}
@@ -159,6 +184,7 @@ const SetNewPassword: React.FC = () => {
               title={RESET_PASSWORD.SAVE_BUTTON}
               onPress={handleSavePassword}
               disabled={isLoading}
+              loading={isLoading}
               style={{ marginTop: scale(24) }}
             />
           </View>

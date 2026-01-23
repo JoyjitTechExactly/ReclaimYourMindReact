@@ -6,7 +6,7 @@ export type AuthStackParamList = {
   JourneyCompletion: undefined; // SignUpConfirmation screen
   ForgotPassword: undefined;
   OTP: { email: string };
-  ResetPassword: { email: string };
+  ResetPassword: { email: string; token: string };
   PasswordConfirmation: undefined;
 };
 
