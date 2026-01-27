@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -6,21 +6,22 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AppStackParamList } from '../../navigators/types';
 import { COLORS } from '../../constants/colors';
 import { HOME } from '../../constants/strings';
-import { homeJourneyStages } from '../../constants/constantData';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleFont } from '../../utils/scaling';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import storage from '../../utils/storage';
+import { fetchPhasesAsync } from '../../redux/slices/home/homeSlice';
 
 type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Dashboard'>;
 
 const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<HomeNavigationProp>();
-  const overallProgress = 0.41; // 41%
+  const dispatch = useAppDispatch();
 
   const { user } = useAppSelector((state) => state.auth);
+  const { phases, isLoading, overallProgress } = useAppSelector((state) => state.home);
 
   // Initialize with user data from Redux or storage
   const [fullName, setFullName] = useState(user?.name || '');
@@ -42,12 +43,13 @@ const HomeScreen: React.FC = () => {
       }
     };
     loadUserData();
-  }, [user]);
+    dispatch(fetchPhasesAsync());
+  }, [user,dispatch]);
 
-  const handleStepPress = (step: typeof homeJourneyStages[0]) => {
+  const handleStepPress = (step: JourneyStepItem) => {
     const stepType = step.title as 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action';
     
-    // Action step goes to ActionIntro first
+    // Action step navigation based on isSubPhaseAvailable flag
     if (stepType === 'Action') {
       navigation.navigate('ActionIntro');
     } else {
@@ -57,6 +59,27 @@ const HomeScreen: React.FC = () => {
         stepType: stepType,
       });
     }
+
+  //   if (step.isSubPhaseAvailable === true) {
+  //     // If sub-phases are available, go to ActionIntro (category selection)
+  //     navigation.navigate('ActionIntro');
+  //     return;
+  //   } else {
+  //     // If no sub-phases, go directly to TopicListing
+  //     // Use replace to ensure we don't go back to ActionIntro if it was previously visited
+  //     navigation.replace('TopicListing', {
+  //       stepId: step.id,
+  //       stepType: stepType,
+  //     });
+  //     return;
+  //   }
+  // } else {
+  //   // Other steps go directly to TopicListing
+  //   navigation.navigate('TopicListing', {
+  //     stepId: step.id,
+  //     stepType: stepType,
+  //   });
+  // }
   };
 
   const renderProgressBar = (progress: number) => {
@@ -75,9 +98,24 @@ const HomeScreen: React.FC = () => {
     total: number;
     completed: boolean; 
     icon: any;
+    imageUrl?: string;
+    isSubPhaseAvailable: boolean;
   }
 
-  const JourneyStepsList = ({ homeJourneyStages }: { homeJourneyStages: JourneyStepItem[] }) => {
+  // Map phases to JourneyStepItem format
+  const journeySteps: JourneyStepItem[] = phases.map((phase) => ({
+    id: phase.id.toString(),
+    title: phase.name,
+    description: phase.description,
+    progress: phase.completed_topics,
+    total: phase.total_topics,
+    completed: phase.completed_topics === phase.total_topics && phase.total_topics > 0,
+    icon: null, // Will use imageUrl instead
+    imageUrl: phase.image_url,
+    isSubPhaseAvailable: phase.isSubPhaseAvailable ?? false,
+  }));
+
+  const JourneyStepsList = ({ journeySteps }: { journeySteps: JourneyStepItem[] }) => {
     const renderItem = (item: JourneyStepItem) => {
       return (
         <TouchableOpacity
@@ -88,15 +126,17 @@ const HomeScreen: React.FC = () => {
         >
           {/* Left Icon */}
           <View style={styles.iconWrapper}>
-            <Image source={item.icon} style={styles.journeyStepIcon} />
+            {item.imageUrl ? (
+              <Image source={{ uri: item.imageUrl }} style={styles.journeyStepIcon} />
+            ) : (
+              item.icon && <Image source={item.icon} style={styles.journeyStepIcon} />
+            )}
           </View>
 
           {/* Right Card */}
           <View style={styles.journeyStepCard}>
             <Text style={styles.journeyStepTitle}>{item.title}</Text>
-            <Text style={styles.journeyStepDescription}>
-              {item.description}
-            </Text>
+            <Text style={styles.journeyStepDescription}>{item.description}</Text>
 
             {item.total > 0 && (
               <View style={styles.progressBarWrapper}>
@@ -132,7 +172,7 @@ const HomeScreen: React.FC = () => {
 
     return (
       <View style={[styles.journeyStepsList, { marginTop: scale(24) }]}>
-        {homeJourneyStages.map(renderItem)}
+        {journeySteps.map(renderItem)}
       </View>
     );
   };
@@ -177,7 +217,7 @@ const HomeScreen: React.FC = () => {
             </View>
 
             {/* Journey Steps List */}
-            <JourneyStepsList homeJourneyStages={homeJourneyStages} />
+            {!isLoading && <JourneyStepsList journeySteps={journeySteps} />}
 
             {/* Overall Progress Section */}
             <View style={[styles.section, styles.overallProgress]}>

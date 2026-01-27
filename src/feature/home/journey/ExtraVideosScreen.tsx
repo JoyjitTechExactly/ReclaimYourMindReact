@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,10 +7,9 @@ import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
-import { ImagePath } from '../../../constants/imagePath';
-import { mockTopics, Topic, ExtraVideo } from '../../../constants/constantData';
+import { Topic, ExtraVideo } from '../../../constants/constantData';
+import { useAppSelector } from '../../../redux/hooks';
 import BackButton from '../../../components/common/BackButton';
-import CustomButton from '../../../components/common/CustomButton';
 import VideoPlayer from '../../../components/home/VideoPlayer';
 import { JOURNEY } from '../../../constants/strings';
 import JourneyTags from '../../../components/home/journey/JourneyTags';
@@ -25,28 +24,100 @@ const ExtraVideosScreen: React.FC = () => {
   const route = useRoute<ExtraVideosRouteProp>();
   const { topicId, stepId, stepType } = route.params;
 
-  const stepData = useMemo(() => {
-    return mockTopics.find(st => st.stepId === stepId);
-  }, [stepId]);
+  // Get topics from Redux state
+  const { subTopics, phaseTopics } = useAppSelector((state) => state.home);
 
   const topic = useMemo(() => {
-    // Check if it's in categories (Action step)
-    if (stepData?.categories) {
-      for (const category of stepData.categories) {
-        const foundTopic = category.topics.find(t => t.id === topicId);
-        if (foundTopic) return foundTopic;
+    // Check subtopics (for Action with categoryId)
+    if (subTopics?.subtopics) {
+      const found = subTopics.subtopics.find(t => t.id.toString() === topicId);
+      if (found) {
+        return {
+          id: found.id.toString(),
+          title: found.title,
+          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
+        } as Topic;
       }
     }
-    // Otherwise check regular topics
-    return stepData?.topics.find(t => t.id === topicId);
-  }, [topicId, stepData]);
+    
+    // Check phase topics (for other steps)
+    if (phaseTopics?.topics) {
+      let topicsToSearch: any[] = [];
+      if (Array.isArray(phaseTopics.topics)) {
+        topicsToSearch = phaseTopics.topics;
+      } else if (phaseTopics.topics.data_1) {
+        topicsToSearch = [...phaseTopics.topics.data_1, ...(phaseTopics.topics.data_2 || [])];
+      }
+      
+      const found = topicsToSearch.find(t => t.id.toString() === topicId);
+      if (found) {
+        return {
+          id: found.id.toString(),
+          title: found.title,
+          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
+        } as Topic;
+      }
+    }
+    
+    return null;
+  }, [topicId, subTopics, phaseTopics]);
 
-  const extraVideos = topic?.extraVideos || [];
+  // Get extra videos from API response
+  const extraVideos: ExtraVideo[] = useMemo(() => {
+    const videos: ExtraVideo[] = [];
+    
+    // Check if there's an "Extra Videos" topic with video_url array
+    if (subTopics?.subtopics) {
+      const extraVideosTopic = subTopics.subtopics.find(t => t.id.toString() === topicId);
+      if (extraVideosTopic && extraVideosTopic.video_url && Array.isArray(extraVideosTopic.video_url)) {
+        extraVideosTopic.video_url.forEach((url: string, index: number) => {
+          videos.push({
+            id: `extra-${extraVideosTopic.id}-${index}`,
+            title: `Extra Video ${index + 1}`,
+            duration: '',
+            videoUrl: url,
+          });
+        });
+      }
+    }
+    
+    // Check phase topics
+    if (phaseTopics?.topics) {
+      let topicsToSearch: any[] = [];
+      if (Array.isArray(phaseTopics.topics)) {
+        topicsToSearch = phaseTopics.topics;
+      } else if (phaseTopics.topics.data_1) {
+        topicsToSearch = [...phaseTopics.topics.data_1, ...(phaseTopics.topics.data_2 || [])];
+      }
+      
+      const extraVideosTopic = topicsToSearch.find(t => t.id.toString() === topicId);
+      if (extraVideosTopic && extraVideosTopic.video_url && Array.isArray(extraVideosTopic.video_url)) {
+        extraVideosTopic.video_url.forEach((url: string, index: number) => {
+          videos.push({
+            id: `extra-${extraVideosTopic.id}-${index}`,
+            title: `Extra Video ${index + 1}`,
+            duration: '',
+            videoUrl: url,
+          });
+        });
+      }
+    }
+    
+    // Also check phaseTopics.extra_videos if available
+    if (phaseTopics?.extra_videos && Array.isArray(phaseTopics.extra_videos)) {
+      phaseTopics.extra_videos.forEach((url: string, index: number) => {
+        videos.push({
+          id: `phase-extra-${index}`,
+          title: `Extra Video ${index + 1}`,
+          duration: '',
+          videoUrl: url,
+        });
+      });
+    }
+    
+    return videos;
+  }, [topicId, subTopics, phaseTopics]);
 
-  const handleVideoPress = (video: ExtraVideo) => {
-    // Handle video play logic
-    console.log('Play video:', video.title);
-  };
 
   const handleMarkTopicComplete = () => {
     navigation.navigate('TopicCompletion', {
@@ -87,7 +158,6 @@ const ExtraVideosScreen: React.FC = () => {
         thumbnailUrl={item.thumbnailUrl}
         variant="card"
         showFullscreenIcon={true}
-        onPress={() => handleVideoPress(item)}
       />
     );
   };
@@ -119,8 +189,8 @@ const ExtraVideosScreen: React.FC = () => {
 
           <JourneyTags
             stepType={stepType}
-            version={topic?.version}
-            showVersionToggle={stepData?.showVersionToggle || false}
+            version={undefined}
+            showVersionToggle={phaseTopics?.isVersionTabAvailable || false}
           />
         </View>
 

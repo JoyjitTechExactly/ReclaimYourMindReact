@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -7,43 +7,110 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { ImagePath } from '../../../constants/imagePath';
-import { mockTopics, ActionCategory } from '../../../constants/constantData';
 import { JOURNEY } from '../../../constants/strings';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
 import { renderJourneyStatusIcon, getJourneyStatusText } from '../../../utils/journeyUtils';
 import BackButton from '../../../components/common/BackButton';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { fetchPhaseTopicsAsync } from '../../../redux/slices/home/homeSlice';
+import { ActionCategory } from '../../../network/services/homeService';
 
 type ActionIntroNavigationProp = StackNavigationProp<AppStackParamList, 'ActionIntro'>;
 
 const ActionIntroScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ActionIntroNavigationProp>();
+  const dispatch = useAppDispatch();
+  
+  // Get phases from Redux to find Action phase ID dynamically
+  const { phases, phaseTopics, isLoadingSubTopics } = useAppSelector((state) => state.home);
 
-  const stepData = useMemo(() => {
-    return mockTopics.find(st => st.stepId === '4' && st.stepType === 'Action');
-  }, []);
+  // Find Action phase ID dynamically
+  const actionPhaseId = useMemo(() => {
+    const actionPhase = phases.find(phase => phase.name === 'Action');
+    return actionPhase?.id || null;
+  }, [phases]);
 
-  const categories = stepData?.categories || [];
+  // Fetch Action phase categories using dynamic phase ID
+  useEffect(() => {
+    if (actionPhaseId) {
+      dispatch(fetchPhaseTopicsAsync(actionPhaseId));
+    }
+  }, [dispatch, actionPhaseId]);
+
+  // Map API categories to ActionCategory format
+  const categories: ActionCategory[] = useMemo(() => {
+    if (!phaseTopics || !phaseTopics.topics || !phaseTopics.topics.data_1) return [];
+    
+    // For Action phase, topics.data_1 contains categories
+    const data1 = phaseTopics.topics.data_1;
+    
+    // Check if data_1 contains categories (Action phase) or topics (Acceptance phase)
+    // Categories have isSubTopicAvailable property
+    if (Array.isArray(data1) && data1.length > 0 && 'isSubTopicAvailable' in data1[0]) {
+      return data1.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        total_topics: 0, // Will be updated when we fetch subtopics for this category
+        completed_topics: 0, // Will be updated when we fetch subtopics for this category
+        status: item.status,
+      })) as ActionCategory[];
+    }
+    
+    return [];
+  }, [phaseTopics]);
 
   const getCategoryStatus = (category: ActionCategory): 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED' => {
-    if (category.topics.length === 0) return 'NOT_STARTED';
+    // Use status from API if available (handle different formats)
+    const status = category.status?.toLowerCase();
+    if (status === 'in progress' || status === 'in_progress') {
+      return 'IN_PROGRESS';
+    }
+    if (status === 'completed' || status === 'done') {
+      return 'COMPLETED';
+    }
+    
+    // Fallback to topic count logic if status not available
+    if (category.total_topics === 0) return 'NOT_STARTED';
+    
+    const completedCount = category.completed_topics || 0;
+    const totalCount = category.total_topics || 0;
 
-    const completedCount = category.topics.filter(t => t.status === 'COMPLETED').length;
-    const inProgressCount = category.topics.filter(t => t.status === 'IN_PROGRESS').length;
-
-    if (completedCount === category.topics.length) return 'COMPLETED';
-    if (completedCount > 0 || inProgressCount > 0) return 'IN_PROGRESS';
+    if (completedCount === totalCount && totalCount > 0) return 'COMPLETED';
+    if (completedCount > 0) return 'IN_PROGRESS';
     return 'NOT_STARTED';
   };
 
 
   const handleCategoryPress = (category: ActionCategory) => {
-    navigation.navigate('TopicListing', {
-      stepId: '4',
-      stepType: 'Action',
-      categoryId: category.id,
-    });
+    // Check if this is "Extra Videos" category - navigate to ExtraVideosScreen
+    if (category.title.toLowerCase().includes('extra video')) {
+      // Find the "Extra Videos" topic from phaseTopics to get its ID
+      if (phaseTopics?.topics?.data_1) {
+        const extraVideosItem = phaseTopics.topics.data_1.find(
+          (item: any) => item.title.toLowerCase().includes('extra video')
+        );
+        if (extraVideosItem && actionPhaseId) {
+          navigation.navigate('ExtraVideos', {
+            topicId: extraVideosItem.id.toString(),
+            stepId: actionPhaseId.toString(),
+            stepType: 'Action',
+          });
+          return;
+        }
+      }
+    }
+
+    // For other categories, navigate to TopicListing
+    if (actionPhaseId) {
+      navigation.navigate('TopicListing', {
+        stepId: actionPhaseId.toString(),
+        stepType: 'Action',
+        categoryId: category.id.toString(),
+      });
+    }
   };
 
   const renderCategoryItem = (item: ActionCategory) => {
@@ -60,7 +127,11 @@ const ActionIntroScreen: React.FC = () => {
             <Text style={styles.categoryTitle}>{item.title}</Text>
             <Image source={ImagePath.RightArrow} style={styles.categoryArrow} resizeMode="contain" />
           </View>
-          <Text style={styles.categoryDescription}>{item.description}</Text>
+          {item.description && item.description.trim().length > 0 && (
+            <Text style={styles.categoryDescription}>
+              {item.description.replace(/<[^>]*>/g, '')}
+            </Text>
+          )}
           <View style={commonStyles.row}>
             <View style={styles.statusContainer}>
               {renderJourneyStatusIcon({ status: categoryStatus, style: commonStyles.statusIcon })}
@@ -100,7 +171,11 @@ const ActionIntroScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {categories.length > 0 ? (
+        {isLoadingSubTopics ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>Loading categories...</Text>
+          </View>
+        ) : categories.length > 0 ? (
           categories.map((item) => (
             <View key={item.id}>
               {renderCategoryItem(item)}

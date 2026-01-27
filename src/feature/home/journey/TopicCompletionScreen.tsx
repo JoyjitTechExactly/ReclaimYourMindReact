@@ -8,7 +8,7 @@ import { COLORS } from '../../../constants/colors';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
 import { ImagePath } from '../../../constants/imagePath';
-import { mockTopics } from '../../../constants/constantData';
+import { useAppSelector } from '../../../redux/hooks';
 import { JOURNEY } from '../../../constants/strings';
 import JourneyNavigationButtons from '../../../components/home/journey/JourneyNavigationButtons';
 
@@ -21,103 +21,57 @@ const TopicCompletionScreen: React.FC = () => {
   const route = useRoute<TopicCompletionRouteProp>();
   const { topicId, stepId, stepType } = route.params;
 
-  const stepData = useMemo(() => {
-    return mockTopics.find(st => st.stepId === stepId);
-  }, [stepId]);
+  // Get topics from Redux state
+  const { subTopics, phaseTopics, phases } = useAppSelector((state) => state.home);
+
+  const currentPhase = useMemo(() => {
+    return phases.find(phase => phase.id.toString() === stepId);
+  }, [phases, stepId]);
 
   const completedCount = useMemo(() => {
-    if (!stepData) return 0;
-
-    // For Action step with categories
-    if (stepData.categories && stepData.stepType === 'Action') {
-      let totalCompleted = 0;
-      let totalTopics = 0;
-      stepData.categories.forEach(category => {
-        category.topics.forEach(topic => {
-          totalTopics++;
-          if (topic.status === 'COMPLETED') {
-            totalCompleted++;
-          }
-        });
-      });
-      return totalCompleted;
+    if (subTopics) {
+      return subTopics.completed_topics || 0;
     }
-
-    // For Acceptance step, count based on version
-    if (stepData.showVersionToggle && stepData.stepType === 'Acceptance') {
-      // This would need the selected version, but for now count all
-      return stepData.topics.filter(t => t.status === 'COMPLETED').length;
+    if (phaseTopics) {
+      return phaseTopics.completed_topics || 0;
     }
-
-    return stepData.topics.filter(t => t.status === 'COMPLETED').length;
-  }, [stepData]);
+    return currentPhase?.completed_topics || 0;
+  }, [subTopics, phaseTopics, currentPhase]);
 
   const totalCount = useMemo(() => {
-    if (!stepData) return 0;
-
-    // For Action step with categories
-    if (stepData.categories && stepData.stepType === 'Action') {
-      let total = 0;
-      stepData.categories.forEach(category => {
-        total += category.topics.length;
-      });
-      return total;
+    if (subTopics) {
+      return subTopics.total_topics || 0;
     }
-
-    return stepData.topics.length;
-  }, [stepData]);
-
-  const currentTopicIndex = useMemo(() => {
-    if (!stepData) return -1;
-
-    // For Action step with categories
-    if (stepData.categories && stepData.stepType === 'Action') {
-      let index = 0;
-      for (const category of stepData.categories) {
-        const topicIndex = category.topics.findIndex(t => t.id === topicId);
-        if (topicIndex >= 0) {
-          return index + topicIndex;
-        }
-        index += category.topics.length;
-      }
-      return -1;
+    if (phaseTopics) {
+      return phaseTopics.total_topics || 0;
     }
-
-    return stepData.topics.findIndex(t => t.id === topicId);
-  }, [stepData, topicId]);
+    return currentPhase?.total_topics || 0;
+  }, [subTopics, phaseTopics, currentPhase]);
 
   const nextTopic = useMemo(() => {
-    if (currentTopicIndex < 0) return null;
-
-    // For Action step with categories
-    if (stepData?.categories && stepData.stepType === 'Action') {
-      let currentIndex = 0;
-      for (const category of stepData.categories) {
-        for (let i = 0; i < category.topics.length; i++) {
-          if (currentIndex === currentTopicIndex && i < category.topics.length - 1) {
-            return category.topics[i + 1];
-          }
-          if (currentIndex === currentTopicIndex && i === category.topics.length - 1) {
-            // Check next category
-            const currentCategoryIndex = stepData.categories.indexOf(category);
-            if (currentCategoryIndex < stepData.categories.length - 1) {
-              const nextCategory = stepData.categories[currentCategoryIndex + 1];
-              if (nextCategory.topics.length > 0) {
-                return nextCategory.topics[0];
-              }
-            }
-          }
-          currentIndex++;
-        }
+    // Find next topic from current topics list
+    let topicsList: any[] = [];
+    
+    if (subTopics?.subtopics) {
+      topicsList = subTopics.subtopics;
+    } else if (phaseTopics?.topics) {
+      if (Array.isArray(phaseTopics.topics)) {
+        topicsList = phaseTopics.topics;
+      } else if (phaseTopics.topics.data_1) {
+        topicsList = [...phaseTopics.topics.data_1, ...(phaseTopics.topics.data_2 || [])];
       }
-      return null;
     }
-
-    if (currentTopicIndex >= 0 && currentTopicIndex < totalCount - 1) {
-      return stepData?.topics[currentTopicIndex + 1];
+    
+    const currentIndex = topicsList.findIndex(t => t.id.toString() === topicId);
+    if (currentIndex >= 0 && currentIndex < topicsList.length - 1) {
+      const next = topicsList[currentIndex + 1];
+      return {
+        id: next.id.toString(),
+        title: next.title,
+      };
     }
     return null;
-  }, [stepData, currentTopicIndex, totalCount, topicId]);
+  }, [subTopics, phaseTopics, topicId]);
 
   const handleNextTopic = () => {
     if (nextTopic) {
@@ -179,10 +133,12 @@ const TopicCompletionScreen: React.FC = () => {
         </Text>
 
         {/* Progress Card */}
-        {stepData && totalCount > 0 && (
+        {totalCount > 0 && (
           <View style={styles.progressCard}>
             <View style={[commonStyles.row, commonStyles.spaceBetween, commonStyles.mb8]}>
-              <Text style={styles.progressLabel}>{stepData.title}</Text>
+              <Text style={styles.progressLabel}>
+                {subTopics?.phase_name || phaseTopics?.phase_name || currentPhase?.name || stepType}
+              </Text>
               <Text style={styles.progressText}>
                 {JOURNEY.COMPLETED_COUNT.replace('{completed}', completedCount.toString()).replace('{total}', totalCount.toString())}
               </Text>

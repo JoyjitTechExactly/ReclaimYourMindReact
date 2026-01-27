@@ -7,7 +7,8 @@ import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
-import { mockTopics, Topic } from '../../../constants/constantData';
+import { Topic } from '../../../constants/constantData';
+import { useAppSelector } from '../../../redux/hooks';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
 import VideoPlayer from '../../../components/home/VideoPlayer';
@@ -25,21 +26,53 @@ const TopicDetailsScreen: React.FC = () => {
   const { topicId, stepId, stepType } = route.params;
   const [reflection, setReflection] = useState('');
 
-  const stepData = useMemo(() => {
-    return mockTopics.find(st => st.stepId === stepId);
-  }, [stepId]);
+  // Get topics from Redux state
+  const { subTopics, phaseTopics } = useAppSelector((state) => state.home);
 
   const topic = useMemo(() => {
-    // Check if it's in categories (Action step)
-    if (stepData?.categories) {
-      for (const category of stepData.categories) {
-        const foundTopic = category.topics.find(t => t.id === topicId);
-        if (foundTopic) return foundTopic;
+    // Check subtopics (for Action with categoryId)
+    if (subTopics?.subtopics) {
+      const found = subTopics.subtopics.find(t => t.id.toString() === topicId);
+      if (found) {
+        return {
+          id: found.id.toString(),
+          title: found.title,
+          description: found.description.replace(/<[^>]*>/g, ''),
+          status: found.status || 'NOT_STARTED',
+          stepType: stepType,
+          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
+          keyLearningPoints: [],
+          reflectionQuestions: [],
+        } as Topic;
       }
     }
-    // Otherwise check regular topics
-    return stepData?.topics.find(t => t.id === topicId);
-  }, [topicId, stepData]);
+    
+    // Check phase topics (for other steps)
+    if (phaseTopics?.topics) {
+      let topicsToSearch: any[] = [];
+      if (Array.isArray(phaseTopics.topics)) {
+        topicsToSearch = phaseTopics.topics;
+      } else if (phaseTopics.topics.data_1) {
+        topicsToSearch = [...phaseTopics.topics.data_1, ...(phaseTopics.topics.data_2 || [])];
+      }
+      
+      const found = topicsToSearch.find(t => t.id.toString() === topicId);
+      if (found) {
+        return {
+          id: found.id.toString(),
+          title: found.title,
+          description: found.description.replace(/<[^>]*>/g, ''),
+          status: found.status || 'NOT_STARTED',
+          stepType: stepType,
+          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
+          keyLearningPoints: [],
+          reflectionQuestions: [],
+        } as Topic;
+      }
+    }
+    
+    return null;
+  }, [topicId, subTopics, phaseTopics, stepType]);
 
   const handleSaveReflection = () => {
     // Save reflection logic here
@@ -107,8 +140,8 @@ const TopicDetailsScreen: React.FC = () => {
 
           <JourneyTags
             stepType={stepType}
-            version={topic.version}
-            showVersionToggle={stepData?.showVersionToggle || false}
+            version={undefined}
+            showVersionToggle={phaseTopics?.isVersionTabAvailable || false}
           />
         </View>
 
@@ -133,15 +166,10 @@ const TopicDetailsScreen: React.FC = () => {
         {/* Video Player Section */}
         {topic.videoUrl && (
           <VideoPlayer
-            title={topic.videoTitle}
-            duration={topic.videoDuration}
+            title={topic.title}
             videoUrl={topic.videoUrl}
             variant="main"
             currentTime="0:00"
-            onPress={() => {
-              // Handle video play logic - open YouTube video
-              console.log('Play video:', topic.videoTitle, topic.videoUrl);
-            }}
           />
         )}
 

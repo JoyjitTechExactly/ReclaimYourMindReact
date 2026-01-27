@@ -6,6 +6,7 @@ import { COLORS } from '../../constants/colors';
 export interface TabOption {
   label: string;
   value: string;
+  disabled?: boolean;
 }
 
 interface TabToggleProps {
@@ -18,6 +19,7 @@ interface TabToggleProps {
   textStyle?: TextStyle;
   activeTextStyle?: TextStyle;
   variant?: 'default' | 'journal'; // 'journal' uses journal-specific styling
+  disabled?: boolean; // Disable all tabs
 }
 
 const TabToggle: React.FC<TabToggleProps> = ({
@@ -30,6 +32,7 @@ const TabToggle: React.FC<TabToggleProps> = ({
   textStyle,
   activeTextStyle,
   variant = 'default',
+  disabled = false,
 }) => {
   const isJournalVariant = variant === 'journal';
 
@@ -85,6 +88,7 @@ const TabToggle: React.FC<TabToggleProps> = ({
     >
       {options.map((option) => {
         const isActive = selectedValue === option.value;
+        const isDisabled = disabled || option.disabled;
         return (
           <TouchableOpacity
             key={option.value}
@@ -101,9 +105,11 @@ const TabToggle: React.FC<TabToggleProps> = ({
                     isJournalVariant ? styles.journalInactiveTab : {},
                     tabStyle,
                   ],
+              isDisabled && styles.disabledTab,
             ]}
-            onPress={() => onValueChange(option.value)}
-            activeOpacity={0.7}
+            onPress={() => !isDisabled && onValueChange(option.value)}
+            disabled={isDisabled}
+            activeOpacity={isDisabled ? 1 : 0.7}
           >
             <Text
               style={[
@@ -118,6 +124,7 @@ const TabToggle: React.FC<TabToggleProps> = ({
                       isJournalVariant ? styles.journalInactiveText : {},
                       textStyle,
                     ],
+                isDisabled && styles.disabledText,
               ]}
             >
               {option.label}
@@ -169,6 +176,12 @@ const styles = StyleSheet.create({
   journalInactiveText: {
     fontSize: scaleFont(16),
     color: COLORS.TEXT_DARK,
+  },
+  disabledTab: {
+    opacity: 0.5,
+  },
+  disabledText: {
+    opacity: 0.5,
   },
 });
 

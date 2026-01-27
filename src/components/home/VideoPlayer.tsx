@@ -1,9 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, Image, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors'; 
-import { getThumbnailFromUrl } from '../../utils/youtubeUtils';
-import { ImagePath } from '../../constants/imagePath';
+import { getYouTubeVideoId } from '../../utils/youtubeUtils';
+
+// Import YoutubePlayer
+// Note: This requires react-native-webview to be properly linked
+// After installing, rebuild the app:
+// - iOS: cd ios && pod install && cd .. && npx react-native run-ios
+// - Android: npx react-native run-android
+import YoutubePlayer from 'react-native-youtube-iframe';
 
 export type VideoPlayerVariant = 'main' | 'card';
 
@@ -30,67 +36,49 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   showFullscreenIcon = true,
   currentTime,
 }) => {
-  // Get thumbnail URL - prioritize custom thumbnail, then YouTube thumbnail, then fallback to dark background
-  const thumbnail = thumbnailUrl || (videoUrl ? getThumbnailFromUrl(videoUrl) : null);
+  // Get YouTube video ID for embedding
+  const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
 
-  // Both variants now use the same base structure with thumbnail
-  const renderVideoContent = () => (
-    <>
-      {/* Thumbnail Image */}
-      {thumbnail ? (
-        <Image
-          source={{ uri: thumbnail }}
-          style={styles.thumbnailImage}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={styles.thumbnailPlaceholder} />
-      )}
-      
-      {/* Dark overlay for better text visibility */}
-      <View style={styles.overlay} />
-
-      {/* Play Button - Centered */}
-      <View style={styles.playButtonContainer}>
-        <View style={styles.playButton}>
-          <Image source={ImagePath.ContinueWhereILeftOff} style={styles.playIcon} />
+  // Show YouTube player directly if videoId is available
+  if (videoId && YoutubePlayer) {
+    const containerHeight = variant === 'card' ? scale(200) : scale(200);
+    return (
+      <View style={[variant === 'card' ? styles.cardContainer : styles.mainContainer, containerStyle]}>
+        <View style={styles.videoWrapper}>
+          <YoutubePlayer
+            height={containerHeight}
+            videoId={videoId}
+            play={false}
+            onChangeState={(state: string) => {
+              // Handle player state changes if needed
+            }}
+            webViewStyle={{ 
+              opacity: 0.99,
+            }}
+            webViewProps={{
+              allowsFullscreenVideo: true,
+              style: {
+                width: '100%',
+                height: '100%',
+              },
+            }}
+          />
         </View>
       </View>
+    );
+  }
 
-      {/* Title and Duration - Bottom Left */}
-      {(title || duration) && (
-        <View style={styles.titleContainer}>
-          {title && <Text style={styles.titleText}>{title}</Text>}
-          {duration && (
-            <Text style={styles.durationText}>
-              {currentTime ? `${currentTime} / ` : ''}
-              {duration}
-            </Text>
-          )}
-        </View>
-      )}
-
-      {/* Fullscreen Icon - Bottom Right (for card variant) */}
-      {variant === 'card' && showFullscreenIcon && (
-        <View style={styles.fullscreenIconContainer}>
-          <Text style={styles.fullscreenIcon}>⛶</Text>
-        </View>
-      )}
-    </>
-  );
-
-  const containerStyles = variant === 'card' 
-    ? [styles.cardContainer, containerStyle]
-    : [styles.mainContainer, containerStyle];
-
+  // Fallback: if no videoId or YoutubePlayer not available, show placeholder
   return (
-    <TouchableOpacity
-      style={containerStyles}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      {renderVideoContent()}
-    </TouchableOpacity>
+    <View style={[variant === 'card' ? styles.cardContainer : styles.mainContainer, containerStyle]}>
+      <View style={styles.thumbnailPlaceholder}>
+        {onPress && (
+          <TouchableOpacity style={styles.fallbackButton} onPress={onPress}>
+            <Text style={styles.fallbackButtonText}>Video not available</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 };
 
@@ -197,6 +185,46 @@ const styles = StyleSheet.create({
     fontSize: scaleFont(18),
     color: COLORS.WHITE,
     opacity: 0.8,
+  },
+  
+  // Video player styles
+  videoWrapper: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.TEXT_DARK,
+  },
+  videoPlayerContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    backgroundColor: COLORS.TEXT_DARK,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: scale(8),
+    right: scale(8),
+    width: scale(32),
+    height: scale(32),
+    borderRadius: scale(16),
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  closeButtonText: {
+    color: COLORS.WHITE,
+    fontSize: scaleFont(18),
+    fontWeight: 'bold',
+  },
+  fallbackButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackButtonText: {
+    color: COLORS.WHITE,
+    fontSize: scaleFont(14),
+    fontFamily: 'varela_round_regular',
   },
 });
 
