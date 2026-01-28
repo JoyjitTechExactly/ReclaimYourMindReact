@@ -24,7 +24,7 @@ export const API_ENDPOINTS = {
     PHASE_WITH_CATEGORY: (phaseId: number, categoryId: number) => `user/phase/${phaseId}/${categoryId}`,
     TOPIC: (topicId: number) => `user/topic/${topicId}`,
     MANAGE_ACCOUNT: 'user/manage-account',
-    CHANGE_PASSWORD: 'user/change-password',
+    CHANGE_PASSWORD: 'user/manage-account/change-password',
     MARK_TOPIC_COMPLETE: 'user/progress',
     SAVE_REFLECTION: 'user/reflections/store',
     DOWNLOAD_PDF: (topicId: number) => `user/reflections/download-pdf/${topicId}`,

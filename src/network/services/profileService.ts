@@ -29,13 +29,13 @@ class ProfileService {
 
   /**
    * Change user password
-   * Endpoint: user/change-password
-   * Method: PUT
-   * Request Body: { currentPassword, newPassword }
+   * Endpoint: user/manage-account/change-password
+   * Method: POST
+   * Request Body: { old_password, password, password_confirmation }
    */
-  async changePassword(passwordData: { currentPassword: string; newPassword: string }): Promise<ApiResponse<AuthResponse>> {
+  async changePassword(passwordData: { old_password: string; password: string; password_confirmation: string }): Promise<ApiResponse<AuthResponse>> {
     try {
-      const response = await apiClient.put<ApiResponse<AuthResponse>>(
+      const response = await apiClient.post<ApiResponse<AuthResponse>>(
         API_ENDPOINTS.USER.CHANGE_PASSWORD,
         passwordData
       );

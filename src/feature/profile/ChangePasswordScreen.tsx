@@ -11,6 +11,9 @@ import { PROFILE, RESET_PASSWORD, ERRORS } from '../../constants/strings';
 import CustomButton from '../../components/common/CustomButton';
 import { commonStyles } from '../../styles/commonStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import profileService from '../../network/services/profileService';
+import { LoadingModal } from '../../components/modals';
+import Toast from 'react-native-toast-message';
 
 type ChangePasswordNavigationProp = StackNavigationProp<AppStackParamList, 'ChangePassword'>;
 
@@ -26,6 +29,8 @@ const ChangePasswordScreen: React.FC = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [currentPasswordError, setCurrentPasswordError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     const validatePassword = (password: string) => {
         const requirements = {
@@ -54,38 +59,76 @@ const ChangePasswordScreen: React.FC = () => {
         </View>
     );
 
-    const handleSavePassword = () => {
+    const handleSavePassword = async () => {
         // Validate current password
         if (!currentPassword) {
             setCurrentPasswordError(PROFILE.INCORRECT_CURRENT_PASSWORD);
             return;
         }
 
-        if (!password || !confirmPassword) {
-            Alert.alert('Error', ERRORS.FILL_ALL_FIELDS);
+        // Clear previous errors
+        setPasswordError('');
+        setConfirmPasswordError('');
+
+        if (!password) {
+            setPasswordError(ERRORS.FILL_ALL_FIELDS);
             return;
         }
 
-        if (password !== confirmPassword) {
-            Alert.alert('Error', ERRORS.PASSWORDS_DO_NOT_MATCH);
+        if (!confirmPassword) {
+            setConfirmPasswordError(ERRORS.FILL_ALL_FIELDS);
             return;
         }
 
         const isValid = Object.values(passwordRequirements).every(Boolean);
         if (!isValid) {
-            Alert.alert('Error', ERRORS.PASSWORD_REQUIREMENTS);
+            setPasswordError(ERRORS.PASSWORD_REQUIREMENTS);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setConfirmPasswordError(ERRORS.PASSWORDS_DO_NOT_MATCH);
             return;
         }
 
         setIsLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const response = await profileService.changePassword({
+                old_password: currentPassword,
+                password: password,
+                password_confirmation: confirmPassword,
+            });
+
             setIsLoading(false);
-            Alert.alert('Success', 'Password changed successfully', [
-                { text: 'OK', onPress: () => navigation.goBack() },
-            ]);
-        }, 1000);
+
+            if (response.success) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Success',
+                    text2: response.message || 'Password changed successfully',
+                    position: 'bottom',
+                    visibilityTime: 2000,
+                });
+                // Navigate to Profile screen after a short delay to show the toast
+                setTimeout(() => {
+                    navigation.navigate('Profile');
+                }, 500);
+            } else {
+                // Handle validation errors
+                const errorMessage = response.error || response.message || 'Failed to change password. Please try again.';
+                
+                // Check if it's a current password error
+                if (errorMessage.toLowerCase().includes('current') || errorMessage.toLowerCase().includes('old')) {
+                    setCurrentPasswordError(errorMessage);
+                } else {
+                    Alert.alert('Error', errorMessage);
+                }
+            }
+        } catch (error) {
+            setIsLoading(false);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        }
     };
 
     const handleBack = () => {
@@ -99,8 +142,23 @@ const ChangePasswordScreen: React.FC = () => {
         }
     };
 
+    const handlePasswordChange = (text: string) => {
+        setPassword(text);
+        if (passwordError) {
+            setPasswordError('');
+        }
+    };
+
+    const handleConfirmPasswordChange = (text: string) => {
+        setConfirmPassword(text);
+        if (confirmPasswordError) {
+            setConfirmPasswordError('');
+        }
+    };
+
     return (
         <View style={[commonStyles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: COLORS.WHITE }]}>
+            <LoadingModal visible={isLoading} message="Changing password..." />
             <Toolbar
                 title={PROFILE.CHANGE_PASSWORD}
                 onBackPress={handleBack}
@@ -144,11 +202,17 @@ const ChangePasswordScreen: React.FC = () => {
                         {/* New Password */}
                         <View style={[commonStyles.inputContainer]}>
                             <Text style={commonStyles.inputLabel}>{RESET_PASSWORD.PASSWORD_LABEL}</Text>
+                            {passwordError && (
+                                <View style={styles.errorContainer}>
+                                    <View style={styles.errorDot} />
+                                    <Text style={styles.errorText}>{passwordError}</Text>
+                                </View>
+                            )}
                             <View style={commonStyles.passwordContainer}>
                                 <TextInput
-                                    style={commonStyles.input}
+                                    style={[commonStyles.input, passwordError && styles.inputError]}
                                     value={password}
-                                    onChangeText={setPassword}
+                                    onChangeText={handlePasswordChange}
                                     placeholder={RESET_PASSWORD.PASSWORD_PLACEHOLDER}
                                     placeholderTextColor={COLORS.GRAY}
                                     secureTextEntry={!showPassword}
@@ -178,11 +242,17 @@ const ChangePasswordScreen: React.FC = () => {
                         {/* Confirm Password */}
                         <View style={[commonStyles.inputContainer, { marginBottom: scale(24) }]}>
                             <Text style={commonStyles.inputLabel}>{RESET_PASSWORD.CONFIRM_PASSWORD_LABEL}</Text>
+                            {confirmPasswordError && (
+                                <View style={styles.errorContainer}>
+                                    <View style={styles.errorDot} />
+                                    <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                                </View>
+                            )}
                             <View style={commonStyles.passwordContainer}>
                                 <TextInput
-                                    style={commonStyles.input}
+                                    style={[commonStyles.input, confirmPasswordError && styles.inputError]}
                                     value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
+                                    onChangeText={handleConfirmPasswordChange}
                                     placeholder={RESET_PASSWORD.CONFIRM_PASSWORD_PLACEHOLDER}
                                     placeholderTextColor={COLORS.GRAY}
                                     secureTextEntry={!showConfirmPassword}
