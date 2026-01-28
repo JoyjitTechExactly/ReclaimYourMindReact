@@ -221,7 +221,10 @@ const JournalScreen: React.FC = () => {
     return (
       <TouchableOpacity
         style={styles.entryCard}
-        onPress={() => handleViewEntry(item.id)}
+        onPress={() => {
+          handleViewEntry(item.id);
+          setMenuVisible(null);
+        }}
         activeOpacity={0.7}
       >
         <View style={styles.entryContent}>
@@ -284,7 +287,10 @@ const JournalScreen: React.FC = () => {
       <>
         <TouchableOpacity
           style={styles.entryCard}
-          onPress={() => handleViewReflection(item.id)}
+          onPress={() => {
+            handleViewReflection(item.id);
+            setMenuVisible(null);
+          }}
           activeOpacity={0.7}
         >
           <View style={styles.entryContent}>
@@ -424,9 +430,7 @@ const JournalScreen: React.FC = () => {
   const renderEmptyState = (type: 'entries' | 'reflections') => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIconContainer}>
-        <Text style={styles.emptyIcon}>
-          {type === 'entries' ? '📝' : '📄❓'}
-        </Text>
+       <Image source={ImagePath.EmptyJournalIcon} style={styles.emptyIcon} resizeMode="contain" />
       </View>
       <Text style={styles.emptyText}>
         {type === 'entries' ? JOURNAL.NO_ENTRIES_YET : JOURNAL.NO_REFLECTIONS_YET}
@@ -665,17 +669,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: scale(80),
-    backgroundColor: COLORS.BACKGROUND,
-    borderRadius: scale(16),
-    marginHorizontal: scale(24),
-    marginTop: scale(24),
-    minHeight: scale(300),
+    backgroundColor: 'transparent'
   },
   emptyIconContainer: {
     marginBottom: scale(16),
   },
   emptyIcon: {
-    fontSize: scaleFont(64),
+    width: scale(50),
+    height: scale(50),
   },
   emptyText: {
     fontSize: scaleFont(16),
