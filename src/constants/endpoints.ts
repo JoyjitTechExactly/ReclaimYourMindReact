@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
     DELETE_REFLECTION: (reflectionId: number) => `user/reflections/${reflectionId}`,
     UPDATE_REFLECTION: 'user/reflections/update',
     DOWNLOAD_REFLECTION_PDF: (reflectionId: number) => `user/reflections/${reflectionId}/pdf`,
+    LAST_UPDATED_STATUS: 'user/progress/last-updated-status',
   },
 } as const;
 

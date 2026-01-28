@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import homeService, { Phase, PhaseSubTopicsResponse, PhaseTopicsResponse, TopicDetailsResponse, ReflectionAnswer } from '../../../network/services/homeService';
+import homeService, { Phase, PhaseSubTopicsResponse, PhaseTopicsResponse, TopicDetailsResponse, ReflectionAnswer, LastUpdatedStatusResponse } from '../../../network/services/homeService';
 
 interface HomeState {
   phases: Phase[];
@@ -18,6 +18,7 @@ interface HomeState {
   isSavingReflection: boolean;
   isDownloadingPDF: boolean;
   isMarkingComplete: boolean;
+  isLoadingLastUpdatedStatus: boolean;
 }
 
 const initialState: HomeState = {
@@ -37,6 +38,7 @@ const initialState: HomeState = {
   isSavingReflection: false,
   isDownloadingPDF: false,
   isMarkingComplete: false,
+  isLoadingLastUpdatedStatus: false,
 };
 
 // Async Thunks
@@ -156,6 +158,21 @@ export const markTopicCompleteAsync = createAsyncThunk(
       return rejectWithValue(response.error || response.message || 'Failed to mark topic as complete');
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to mark topic as complete');
+    }
+  }
+);
+
+export const fetchLastUpdatedStatusAsync = createAsyncThunk(
+  'home/fetchLastUpdatedStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await homeService.getLastUpdatedStatus();
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return rejectWithValue(response.error || response.message || 'Failed to fetch last updated status');
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch last updated status');
     }
   }
 );
@@ -365,6 +382,16 @@ const homeSlice = createSlice({
       })
       .addCase(markTopicCompleteAsync.rejected, (state) => {
         state.isMarkingComplete = false;
+      })
+      // Fetch Last Updated Status
+      .addCase(fetchLastUpdatedStatusAsync.pending, (state) => {
+        state.isLoadingLastUpdatedStatus = true;
+      })
+      .addCase(fetchLastUpdatedStatusAsync.fulfilled, (state) => {
+        state.isLoadingLastUpdatedStatus = false;
+      })
+      .addCase(fetchLastUpdatedStatusAsync.rejected, (state) => {
+        state.isLoadingLastUpdatedStatus = false;
       });
   },
 });

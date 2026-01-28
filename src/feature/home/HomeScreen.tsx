@@ -11,7 +11,8 @@ import { ImagePath } from '../../constants/imagePath';
 import { scale, scaleFont } from '../../utils/scaling';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import storage from '../../utils/storage';
-import { fetchPhasesAsync } from '../../redux/slices/home/homeSlice';
+import { fetchPhasesAsync, fetchLastUpdatedStatusAsync } from '../../redux/slices/home/homeSlice';
+import { LoadingModal } from '../../components/modals';
 
 type HomeNavigationProp = StackNavigationProp<AppStackParamList, 'Dashboard'>;
 
@@ -21,7 +22,7 @@ const HomeScreen: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const { user } = useAppSelector((state) => state.auth);
-  const { phases, isLoading, overallProgress } = useAppSelector((state) => state.home);
+  const { phases, isLoading, overallProgress, isLoadingLastUpdatedStatus } = useAppSelector((state) => state.home);
 
   // Initialize with user data from Redux or storage
   const [fullName, setFullName] = useState(user?.name || '');
@@ -80,6 +81,57 @@ const HomeScreen: React.FC = () => {
   //     stepType: stepType,
   //   });
   // }
+  };
+
+  const handleContinueWhereLeftOff = async () => {
+    try {
+      // Ensure phases are loaded before proceeding
+      if (phases.length === 0 && !isLoading) {
+        await dispatch(fetchPhasesAsync());
+      }
+      
+      const result = await dispatch(fetchLastUpdatedStatusAsync()).unwrap();
+      
+      if (result) {
+        const { page, phaseId, topicId } = result;
+        
+        // Find the phase to get the stepType
+        // Phases should already be loaded from useEffect, but check current state
+        const phase = phases.find(p => p.id === phaseId);
+        
+        if (!phase) {
+          console.error('Phase not found for phaseId:', phaseId, 'Available phases:', phases.map(p => p.id));
+          return;
+        }
+        
+        const stepType = phase.name as 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action';
+        const stepId = phaseId.toString();
+        
+        // Navigate based on the page field
+        if (page === 'topicDetails') {
+          navigation.navigate('TopicDetails', {
+            topicId: topicId.toString(),
+            stepId: stepId,
+            stepType: stepType,
+          });
+        } else if (page === 'topicListing') {
+          navigation.navigate('TopicListing', {
+            stepId: stepId,
+            stepType: stepType,
+          });
+        } else {
+          // Default to TopicDetails if page is unknown
+          navigation.navigate('TopicDetails', {
+            topicId: topicId.toString(),
+            stepId: stepId,
+            stepType: stepType,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching last updated status:', error);
+      // Optionally show an error message to the user
+    }
   };
 
   const renderProgressBar = (progress: number) => {
@@ -187,6 +239,12 @@ const HomeScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoadingLastUpdatedStatus}
+        message="Loading your progress..."
+      />
+
       {/* Fixed Header Section */}
       <View style={commonStyles.fixedHeader}>
         {headerContent}
@@ -208,7 +266,11 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.journeyOverviewTitle}>{HOME.JOURNEY_OVERVIEW_TITLE}</Text>
               <Text style={styles.journeyOverviewSubtitle}>{HOME.JOURNEY_OVERVIEW_SUBTITLE}</Text>
 
-              <TouchableOpacity style={styles.continueButton}>
+              <TouchableOpacity 
+                style={styles.continueButton} 
+                onPress={handleContinueWhereLeftOff}
+                disabled={isLoadingLastUpdatedStatus}
+              >
                 <View style={styles.continueButtonContent}>
                   <Image source={ImagePath.ContinueWhereILeftOff} style={{ width: scale(24), height: scale(24), objectFit: 'contain' }} />
                   <Text style={styles.continueButtonText}>{HOME.CONTINUE_WHERE_LEFT_OFF}</Text>

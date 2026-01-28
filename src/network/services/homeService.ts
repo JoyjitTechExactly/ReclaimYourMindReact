@@ -124,6 +124,17 @@ export interface TopicDetailsResponse {
 }
 
 /**
+ * Last Updated Status Response Interface
+ */
+export interface LastUpdatedStatusResponse {
+  page: string;
+  phaseId: number;
+  topicId: number;
+  isVersionTabAvailable: boolean;
+  versionName: string | null;
+}
+
+/**
  * Home Service
  * Handles all home-related API calls
  */
@@ -251,6 +262,22 @@ class HomeService {
       return response.data;
     } catch (error) {
       console.error('API Error in downloadPDF:', error);
+      return handleError(error);
+    }
+  }
+
+  /**
+   * Get last updated status
+   * Endpoint: user/progress/last-updated-status
+   * Method: GET
+   */
+  async getLastUpdatedStatus(): Promise<ApiResponse<LastUpdatedStatusResponse>> {
+    try {
+      const endpoint = API_ENDPOINTS.USER.LAST_UPDATED_STATUS;
+      const response = await apiClient.get<ApiResponse<LastUpdatedStatusResponse>>(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in getLastUpdatedStatus:', error);
       return handleError(error);
     }
   }
