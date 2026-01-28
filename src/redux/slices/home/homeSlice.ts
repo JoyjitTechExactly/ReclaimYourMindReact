@@ -151,7 +151,7 @@ export const markTopicCompleteAsync = createAsyncThunk(
     try {
       const response = await homeService.markTopicComplete(topicId, phaseId);
       if (response.success) {
-        return { success: true };
+        return { success: true, topicId, phaseId };
       }
       return rejectWithValue(response.error || response.message || 'Failed to mark topic as complete');
     } catch (error: any) {
@@ -295,8 +295,73 @@ const homeSlice = createSlice({
       .addCase(markTopicCompleteAsync.pending, (state) => {
         state.isMarkingComplete = true;
       })
-      .addCase(markTopicCompleteAsync.fulfilled, (state) => {
+      .addCase(markTopicCompleteAsync.fulfilled, (state, action) => {
         state.isMarkingComplete = false;
+        const { topicId } = action.payload;
+        let wasUpdated = false;
+        
+        // Update topic status in subTopics (for Action with categoryId)
+        if (state.subTopics?.subtopics) {
+          const topic = state.subTopics.subtopics.find(t => t.id === topicId);
+          if (topic) {
+            const wasAlreadyCompleted = topic.status === 'COMPLETED' || topic.status === 'Completed';
+            if (!wasAlreadyCompleted) {
+              topic.status = 'COMPLETED';
+              wasUpdated = true;
+              // Increment completed_topics if it wasn't already completed
+              if (state.subTopics.completed_topics < state.subTopics.total_topics) {
+                state.subTopics.completed_topics += 1;
+              }
+            }
+          }
+        }
+        
+        // Update topic status in phaseTopics (for other steps)
+        if (state.phaseTopics?.topics && !wasUpdated) {
+          // Check data_1 (Controller version or single version)
+          if (Array.isArray(state.phaseTopics.topics.data_1)) {
+            const topic1 = state.phaseTopics.topics.data_1.find(t => t.id === topicId);
+            if (topic1 && 'status' in topic1) {
+              const wasAlreadyCompleted = topic1.status === 'COMPLETED' || topic1.status === 'Completed';
+              if (!wasAlreadyCompleted) {
+                topic1.status = 'COMPLETED';
+                wasUpdated = true;
+                // Increment completed_topics if it wasn't already completed
+                if (state.phaseTopics.completed_topics < state.phaseTopics.total_topics) {
+                  state.phaseTopics.completed_topics += 1;
+                }
+              }
+            }
+          }
+          
+          // Check data_2 (Adapter version) - only if not found in data_1
+          if (!wasUpdated && state.phaseTopics.topics.data_2 && Array.isArray(state.phaseTopics.topics.data_2)) {
+            const topic2 = state.phaseTopics.topics.data_2.find(t => t.id === topicId);
+            if (topic2 && 'status' in topic2) {
+              const wasAlreadyCompleted = topic2.status === 'COMPLETED' || topic2.status === 'Completed';
+              if (!wasAlreadyCompleted) {
+                topic2.status = 'COMPLETED';
+                wasUpdated = true;
+                // Increment completed_topics if it wasn't already completed
+                if (state.phaseTopics.completed_topics < state.phaseTopics.total_topics) {
+                  state.phaseTopics.completed_topics += 1;
+                }
+              }
+            }
+          }
+        }
+        
+        // Update topicDetails if it matches
+        if (state.topicDetails?.sub_topic?.id === topicId) {
+          const wasAlreadyCompleted = state.topicDetails.sub_topic.status === 'COMPLETED' || 
+                                      state.topicDetails.sub_topic.status === 'Completed';
+          if (!wasAlreadyCompleted) {
+            state.topicDetails.sub_topic.status = 'COMPLETED';
+            if (state.topicDetails.completed_topics < state.topicDetails.total_topics) {
+              state.topicDetails.completed_topics += 1;
+            }
+          }
+        }
       })
       .addCase(markTopicCompleteAsync.rejected, (state) => {
         state.isMarkingComplete = false;
