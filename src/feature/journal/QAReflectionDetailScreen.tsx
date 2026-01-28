@@ -218,13 +218,12 @@ const QAReflectionDetailScreen: React.FC = () => {
     );
   }
 
-  const isLoading = isUpdatingReflection || isDeletingReflection || isDownloadingReflectionPDF;
+  // Only show LoadingModal for save/update operation (like save functionality)
+  const isLoading = isUpdatingReflection;
 
   // Get loading message
   const getLoadingMessage = () => {
     if (isUpdatingReflection) return 'Updating...';
-    if (isDeletingReflection) return 'Deleting...';
-    if (isDownloadingReflectionPDF) return 'Downloading PDF...';
     return 'Loading...';
   };
 

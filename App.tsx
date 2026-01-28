@@ -17,6 +17,7 @@ import { COLORS } from './src/constants/colors';
 import { restoreAuthStateAsync } from './src/redux/slices/auth/authSlice';
 import { AppDispatch } from './src/redux/store';
 import Toast from 'react-native-toast-message';
+import { navigationRef } from './src/utils/navigationRef';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -24,7 +25,7 @@ function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <StatusBar 
             barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
             backgroundColor={COLORS.BACKGROUND}

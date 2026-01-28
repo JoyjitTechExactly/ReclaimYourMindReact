@@ -210,21 +210,12 @@ const JournalEntryDetailScreen: React.FC = () => {
     );
   };
 
-  if (isLoadingJournals || !entry) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-      </View>
-    );
-  }
-
-  const isLoading = isUpdatingJournal || isDeletingJournal || isDownloadingJournalPDF;
+  // Only show LoadingModal for save/update operation (like save functionality)
+  const isLoading = isUpdatingJournal;
 
   // Get loading message
   const getLoadingMessage = () => {
     if (isUpdatingJournal) return 'Updating...';
-    if (isDeletingJournal) return 'Deleting...';
-    if (isDownloadingJournalPDF) return 'Downloading PDF...';
     return 'Loading...';
   };
 
@@ -244,7 +235,7 @@ const JournalEntryDetailScreen: React.FC = () => {
           <View>
             {/* Journal Entry Card */}
             <View style={styles.entryCard}>
-              <Text style={styles.entryDate}>{entry.date}, {entry.time}</Text>
+              <Text style={styles.entryDate}>{entry?.date}, {entry?.time}</Text>
 
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{JOURNAL.YOUR_REFLECTION}</Text>
@@ -281,7 +272,7 @@ const JournalEntryDetailScreen: React.FC = () => {
                   </View>
                 </>
               ) : (
-                <Text style={styles.entryContent}>{entry.content}</Text>
+                <Text style={styles.entryContent}>{entry?.content}</Text>
               )}
             </View>
             <View style={commonStyles.mb60} />

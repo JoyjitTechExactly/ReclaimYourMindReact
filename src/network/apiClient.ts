@@ -2,6 +2,8 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 import { store } from '../redux/store';
 import { API_CONFIG } from './config';
 import storage from '../utils/storage';
+import { logout } from '../redux/slices/auth/authSlice';
+import { resetToLogin } from '../utils/navigationRef';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -95,9 +97,30 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized - Token expired or invalid
     if (error.response?.status === 401) {
-      // Optionally dispatch logout action here
-      // store.dispatch(logout());
-      console.warn('Unauthorized access - Token may be expired');
+      const requestUrl = error.config?.url || '';
+      
+      // Check if this endpoint requires authentication
+      // Exclude auth endpoints that don't need a token (login, register, forgot password, etc.)
+      const isAuthEndpoint = requestUrl.includes('/auth/login') ||
+                            requestUrl.includes('/auth/register') ||
+                            requestUrl.includes('/auth/forgot-password') ||
+                            requestUrl.includes('/auth/otp-verification') ||
+                            requestUrl.includes('/auth/reset-password') ||
+                            requestUrl.includes('/auth/refresh');
+      
+      // Only handle 401 for endpoints that require authentication
+      if (!isAuthEndpoint) {
+        console.warn('Unauthorized access - Token expired or invalid. Logging out...');
+        
+        // Dispatch logout action to clear auth state
+        store.dispatch(logout());
+        
+        // Reset navigation to login screen
+        // Use setTimeout to ensure navigation happens after state update
+        setTimeout(() => {
+          resetToLogin();
+        }, 100);
+      }
     }
 
     return Promise.reject(error);
