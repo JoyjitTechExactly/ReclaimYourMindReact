@@ -28,6 +28,15 @@ export const API_ENDPOINTS = {
     MARK_TOPIC_COMPLETE: 'user/progress',
     SAVE_REFLECTION: 'user/reflections/store',
     DOWNLOAD_PDF: (topicId: number) => `user/reflections/download-pdf/${topicId}`,
+    JOURNALS: 'user/journals',
+    STORE_JOURNAL: 'user/journals/store',
+    REFLECTIONS: 'user/reflections',
+    DELETE_JOURNAL: (journalId: number) => `user/journals/${journalId}`,
+    UPDATE_JOURNAL: 'user/journals/update',
+    DOWNLOAD_JOURNAL_PDF: (journalId: number) => `user/journals/${journalId}/pdf`,
+    DELETE_REFLECTION: (reflectionId: number) => `user/reflections/${reflectionId}`,
+    UPDATE_REFLECTION: 'user/reflections/update',
+    DOWNLOAD_REFLECTION_PDF: (reflectionId: number) => `user/reflections/${reflectionId}/pdf`,
   },
 } as const;
 

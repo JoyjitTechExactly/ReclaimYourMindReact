@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
@@ -9,19 +9,102 @@ import { JOURNAL } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
-import { sampleJournalEntries, sampleQAReflections, JournalEntry, QAReflection } from '../../constants/constantData';
+import type { JournalEntry, QAReflection } from '../../constants/constantData';
 import TabToggle from '../../components/common/TabToggle';
 import { DropdownMenu, MenuItem } from '../../components/menu';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { fetchJournalsAsync, fetchReflectionsAsync, deleteJournalAsync, deleteReflectionAsync, downloadJournalPDFAsync, downloadReflectionPDFAsync } from '../../redux/slices/journal/journalSlice';
+import { JournalEntry as ApiJournalEntry, ReflectionEntry } from '../../network/services/journalService';
+import Toast from 'react-native-toast-message';
+import { LoadingModal } from '../../components/modals';
 
 type JournalNavigationProp = StackNavigationProp<AppStackParamList, 'Journal'>;
+
+/**
+ * Parse date string from API format "28 Jan 2026, 11:19 AM" to separate date and time
+ */
+const parseApiDate = (dateString: string): { date: string; time: string } => {
+  try {
+    // Format: "28 Jan 2026, 11:19 AM"
+    const parts = dateString.split(', ');
+    if (parts.length === 2) {
+      return {
+        date: parts[0], // "28 Jan 2026"
+        time: parts[1], // "11:19 AM"
+      };
+    }
+    // Fallback: return as is
+    return { date: dateString, time: '' };
+  } catch (error) {
+    return { date: dateString, time: '' };
+  }
+};
+
+/**
+ * Transform API journal entry to component format
+ */
+const transformJournalEntry = (apiEntry: ApiJournalEntry): JournalEntry => {
+  const { date, time } = parseApiDate(apiEntry.created_at);
+  return {
+    id: apiEntry.id.toString(),
+    title: '', // API doesn't provide title, using empty string
+    content: apiEntry.content,
+    date,
+    time,
+    createdAt: new Date(apiEntry.created_at),
+  };
+};
+
+/**
+ * Transform API reflection entry to component format
+ */
+const transformReflectionEntry = (apiEntry: ReflectionEntry): QAReflection => {
+  const { date, time } = parseApiDate(apiEntry.created_at);
+  return {
+    id: apiEntry.id.toString(),
+    focusOfAdvice: apiEntry.topic_title,
+    date,
+    time,
+    questions: apiEntry.reflection_question ? [apiEntry.reflection_question] : [],
+    reflection: apiEntry.reflection_text,
+    createdAt: new Date(apiEntry.created_at),
+    tag: apiEntry.phase_name,
+  };
+};
 
 const JournalScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<JournalNavigationProp>();
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<'entries' | 'reflections'>('entries');
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(sampleJournalEntries);
-  const [qaReflections, setQAReflections] = useState<QAReflection[]>(sampleQAReflections);
   const [menuVisible, setMenuVisible] = useState<string | null>(null);
+
+  // Redux state
+  const { journals, reflections, isLoadingJournals, isLoadingReflections, isDeletingJournal, isDeletingReflection, isDownloadingJournalPDF, isDownloadingReflectionPDF } = useAppSelector(
+    (state) => state.journal
+  );
+
+  // Transform API data to component format
+  const journalEntries = useMemo(() => journals.map(transformJournalEntry), [journals]);
+  const qaReflections = useMemo(() => reflections.map(transformReflectionEntry), [reflections]);
+
+  // Fetch data on mount and when tab changes
+  useEffect(() => {
+    if (activeTab === 'entries') {
+      dispatch(fetchJournalsAsync());
+    } else {
+      dispatch(fetchReflectionsAsync());
+    }
+  }, [activeTab, dispatch]);
+
+  // Reload journals when screen comes into focus (e.g., after creating a new entry)
+  useFocusEffect(
+    useCallback(() => {
+      if (activeTab === 'entries') {
+        dispatch(fetchJournalsAsync());
+      }
+    }, [activeTab, dispatch])
+  );
 
   const handleNewEntry = () => {
     navigation.navigate('NewJournalEntry');
@@ -36,13 +119,87 @@ const JournalScreen: React.FC = () => {
   };
 
   const handleDeleteEntry = (entryId: string) => {
-    setJournalEntries(journalEntries.filter(entry => entry.id !== entryId));
-    setMenuVisible(null);
+    if (isDeletingJournal) return; // Prevent multiple delete operations
+    
+    Alert.alert(
+      'Delete Entry',
+      'Are you sure you want to delete this journal entry? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => setMenuVisible(null),
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const journalId = parseInt(entryId, 10);
+              await dispatch(deleteJournalAsync(journalId)).unwrap();
+              Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: 'Journal entry deleted successfully',
+                position: 'bottom',
+                visibilityTime: 3000,
+              });
+              setMenuVisible(null);
+            } catch (error: any) {
+              Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error || 'Failed to delete journal entry',
+                position: 'bottom',
+                visibilityTime: 3000,
+              });
+              setMenuVisible(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
-  const handleDownloadEntry = (entryId: string) => {
-    // Implement download functionality
-    setMenuVisible(null);
+  const handleDownloadEntry = async (entryId: string) => {
+    if (isDownloadingJournalPDF) return; // Prevent multiple download operations
+    
+    try {
+      const journalId = parseInt(entryId, 10);
+      const result = await dispatch(downloadJournalPDFAsync(journalId)).unwrap();
+      
+      if (result.pdfUrl) {
+        const canOpen = await Linking.canOpenURL(result.pdfUrl);
+        if (canOpen) {
+          await Linking.openURL(result.pdfUrl);
+          Toast.show({
+            type: 'success',
+            text1: 'Success',
+            text2: 'Opening PDF in browser...',
+            position: 'bottom',
+            visibilityTime: 2000,
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: 'Cannot open PDF URL',
+            position: 'bottom',
+            visibilityTime: 3000,
+          });
+        }
+      }
+      setMenuVisible(null);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error || 'Failed to download PDF',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      setMenuVisible(null);
+    }
   };
 
   const handleMenuPress = (entryId: string) => {
@@ -157,17 +314,90 @@ const JournalScreen: React.FC = () => {
                       {
                         icon: ImagePath.DownloadIcon,
                         text: JOURNAL.DOWNLOAD,
-                        onPress: () => {
-                          handleDownloadEntry(item.id);
-                          setMenuVisible(null);
+                        onPress: async () => {
+                          if (isDownloadingReflectionPDF) return; // Prevent multiple download operations
+                          
+                          try {
+                            const reflectionId = parseInt(item.id, 10);
+                            const result = await dispatch(downloadReflectionPDFAsync(reflectionId)).unwrap();
+                            
+                            if (result.pdfUrl) {
+                              const canOpen = await Linking.canOpenURL(result.pdfUrl);
+                              if (canOpen) {
+                                await Linking.openURL(result.pdfUrl);
+                                Toast.show({
+                                  type: 'success',
+                                  text1: 'Success',
+                                  text2: 'Opening PDF in browser...',
+                                  position: 'bottom',
+                                  visibilityTime: 2000,
+                                });
+                              } else {
+                                Toast.show({
+                                  type: 'error',
+                                  text1: 'Error',
+                                  text2: 'Cannot open PDF URL',
+                                  position: 'bottom',
+                                  visibilityTime: 3000,
+                                });
+                              }
+                            }
+                            setMenuVisible(null);
+                          } catch (error: any) {
+                            Toast.show({
+                              type: 'error',
+                              text1: 'Error',
+                              text2: error || 'Failed to download PDF',
+                              position: 'bottom',
+                              visibilityTime: 3000,
+                            });
+                            setMenuVisible(null);
+                          }
                         },
                       },
                       {
                         icon: ImagePath.DeleteIcon,
                         text: JOURNAL.DELETE,
                         onPress: () => {
-                          setQAReflections(qaReflections.filter(ref => ref.id !== item.id));
-                          setMenuVisible(null);
+                          if (isDeletingReflection) return; // Prevent multiple delete operations
+                          const reflectionId = parseInt(item.id, 10);
+                          Alert.alert(
+                            'Delete Reflection',
+                            'Are you sure you want to delete this reflection? This action cannot be undone.',
+                            [
+                              {
+                                text: 'Cancel',
+                                style: 'cancel',
+                                onPress: () => setMenuVisible(null),
+                              },
+                              {
+                                text: 'Delete',
+                                style: 'destructive',
+                                onPress: async () => {
+                                  try {
+                                    await dispatch(deleteReflectionAsync(reflectionId)).unwrap();
+                                    Toast.show({
+                                      type: 'success',
+                                      text1: 'Success',
+                                      text2: 'Reflection deleted successfully',
+                                      position: 'bottom',
+                                      visibilityTime: 3000,
+                                    });
+                                    setMenuVisible(null);
+                                  } catch (error: any) {
+                                    Toast.show({
+                                      type: 'error',
+                                      text1: 'Error',
+                                      text2: error || 'Failed to delete reflection',
+                                      position: 'bottom',
+                                      visibilityTime: 3000,
+                                    });
+                                    setMenuVisible(null);
+                                  }
+                                },
+                              },
+                            ]
+                          );
                         },
                         isDelete: true,
                       },
@@ -204,8 +434,25 @@ const JournalScreen: React.FC = () => {
     </View>
   );
 
+  const isLoading = isDeletingJournal || isDeletingReflection || isDownloadingJournalPDF || isDownloadingReflectionPDF;
+
+  // Get loading message
+  const getLoadingMessage = () => {
+    if (isDeletingJournal) return 'Deleting journal entry...';
+    if (isDeletingReflection) return 'Deleting reflection...';
+    if (isDownloadingJournalPDF) return 'Downloading journal PDF...';
+    if (isDownloadingReflectionPDF) return 'Downloading reflection PDF...';
+    return 'Loading...';
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={getLoadingMessage()}
+      />
+
       {/* Fixed Header Section */}
       <View style={[commonStyles.fixedHeader, { paddingBottom: scale(20) }]}>
         <Text style={[commonStyles.headerTitle, { color: COLORS.PRIMARY, marginBottom: scale(8) }]}>{JOURNAL.TITLE}</Text>
@@ -238,7 +485,11 @@ const JournalScreen: React.FC = () => {
           <View style={commonStyles.contentTransparent}>
             {activeTab === 'entries' ? (
               <>
-                {journalEntries.length === 0 ? (
+                {isLoadingJournals ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+                  </View>
+                ) : journalEntries.length === 0 ? (
                   renderEmptyState('entries')
                 ) : (
                   <FlatList
@@ -252,7 +503,11 @@ const JournalScreen: React.FC = () => {
               </>
             ) : (
               <>
-                {qaReflections.length === 0 ? (
+                {isLoadingReflections ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+                  </View>
+                ) : qaReflections.length === 0 ? (
                   renderEmptyState('reflections')
                 ) : (
                   <FlatList
@@ -451,6 +706,13 @@ const styles = StyleSheet.create({
     fontSize: scaleFont(32),
     color: COLORS.WHITE,
     fontWeight: '300',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: scale(80),
+    minHeight: scale(300),
   },
 });
 

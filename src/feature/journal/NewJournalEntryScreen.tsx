@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
@@ -10,24 +10,50 @@ import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import Toolbar from '../../components/common/Toolbar';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { createJournalAsync } from '../../redux/slices/journal/journalSlice';
+import Toast from 'react-native-toast-message';
+import { LoadingModal } from '../../components/modals';
 
 type NewJournalEntryNavigationProp = StackNavigationProp<AppStackParamList, 'NewJournalEntry'>;
 
 const NewJournalEntryScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NewJournalEntryNavigationProp>();
+  const dispatch = useAppDispatch();
   const [content, setContent] = useState('');
 
-  const handleSave = () => {
-    if (content.trim()) {
-      // Here you would save to your data store
-      // For now, just navigate back
-      navigation.goBack();
+  // Redux state
+  const { isCreatingJournal } = useAppSelector((state) => state.journal);
+
+  const handleSave = async () => {
+    if (content.trim() && !isCreatingJournal) {
+      try {
+        await dispatch(createJournalAsync(content.trim())).unwrap();
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Journal entry saved successfully',
+          position: 'bottom',
+          visibilityTime: 2000,
+        });
+        navigation.goBack();
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error || 'Failed to save journal entry',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
     }
   };
 
   const handleBack = () => {
-    navigation.goBack();
+    if (!isCreatingJournal) {
+      navigation.goBack();
+    }
   };
 
   return (
@@ -35,6 +61,12 @@ const NewJournalEntryScreen: React.FC = () => {
       style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: COLORS.BACKGROUND }}
     >
       <View style={[styles.container]}>
+        {/* Loading Modal */}
+        <LoadingModal
+          visible={isCreatingJournal}
+          message="Saving journal entry..."
+        />
+
         {/* Header */}
         <Toolbar
           title={JOURNAL.JOURNAL_ENTRIES}
@@ -45,7 +77,7 @@ const NewJournalEntryScreen: React.FC = () => {
         />
 
         {/* Content */}
-        <View style={styles.contentWrapper}>
+        <View style={[styles.contentWrapper, isCreatingJournal && styles.contentDisabled]}>
           <ScrollView
             style={styles.scrollView}
             showsVerticalScrollIndicator={false}
@@ -62,19 +94,27 @@ const NewJournalEntryScreen: React.FC = () => {
                 multiline
                 textAlignVertical="top"
                 autoFocus
+                editable={!isCreatingJournal}
               />
             </View>
           </ScrollView>
 
           <View style={styles.bottomContainer}>
             <TouchableOpacity
-              style={[styles.saveButton, !content.trim() && styles.saveButtonDisabled]}
+              style={[styles.saveButton, (!content.trim() || isCreatingJournal) && styles.saveButtonDisabled]}
               onPress={handleSave}
-              disabled={!content.trim()}
+              disabled={!content.trim() || isCreatingJournal}
             >
-              <Text style={[styles.saveButtonText, !content.trim() && styles.saveButtonTextDisabled]}>
-                {JOURNAL.SAVE_ENTRY}
-              </Text>
+              {isCreatingJournal ? (
+                <View style={styles.saveButtonContent}>
+                  <ActivityIndicator size="small" color={COLORS.WHITE} />
+                  <Text style={[styles.saveButtonText, { marginLeft: scale(8) }]}>Saving...</Text>
+                </View>
+              ) : (
+                <Text style={[styles.saveButtonText, !content.trim() && styles.saveButtonTextDisabled]}>
+                  {JOURNAL.SAVE_ENTRY}
+                </Text>
+              )}
             </TouchableOpacity>
 
             <View style={styles.privacyContainer}>
@@ -163,6 +203,14 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_MUTED,
     fontFamily: 'varela_round_regular',
     lineHeight: scaleFont(18),
+  },
+  contentDisabled: {
+    opacity: 0.8,
+  },
+  saveButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

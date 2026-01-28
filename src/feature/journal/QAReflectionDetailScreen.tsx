@@ -1,38 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import RenderHTML from 'react-native-render-html';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
 import { JOURNAL } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
-import { sampleQAReflections, QAReflection } from '../../constants/constantData';
+import type { QAReflection } from '../../constants/constantData';
 import Toolbar from '../../components/common/Toolbar';
 import JourneyTags from '../../components/home/journey/JourneyTags';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { fetchReflectionsAsync, updateReflectionAsync, deleteReflectionAsync, downloadReflectionPDFAsync } from '../../redux/slices/journal/journalSlice';
+import { ReflectionEntry } from '../../network/services/journalService';
+import Toast from 'react-native-toast-message';
+import { LoadingModal } from '../../components/modals';
 
 type QAReflectionDetailRouteProp = RouteProp<AppStackParamList, 'QAReflectionDetail'>;
 type QAReflectionDetailNavigationProp = StackNavigationProp<AppStackParamList, 'QAReflectionDetail'>;
 
+/**
+ * Parse date string from API format "28 Jan 2026, 11:19 AM" to separate date and time
+ */
+const parseApiDate = (dateString: string): { date: string; time: string } => {
+  try {
+    const parts = dateString.split(', ');
+    if (parts.length === 2) {
+      return {
+        date: parts[0],
+        time: parts[1],
+      };
+    }
+    return { date: dateString, time: '' };
+  } catch (error) {
+    return { date: dateString, time: '' };
+  }
+};
+
+/**
+ * Transform API reflection entry to component format
+ */
+const transformReflectionEntry = (apiEntry: ReflectionEntry): QAReflection => {
+  const { date, time } = parseApiDate(apiEntry.created_at);
+  return {
+    id: apiEntry.id.toString(),
+    focusOfAdvice: apiEntry.topic_title,
+    date,
+    time,
+    questions: apiEntry.reflection_question ? [apiEntry.reflection_question] : [],
+    reflection: apiEntry.reflection_text,
+    createdAt: new Date(apiEntry.created_at),
+    tag: apiEntry.phase_name,
+  };
+};
+
 const QAReflectionDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const navigation = useNavigation<QAReflectionDetailNavigationProp>();
   const route = useRoute<QAReflectionDetailRouteProp>();
   const { reflectionId, editMode } = route.params;
+  const dispatch = useAppDispatch();
 
-  const [reflection, setReflection] = useState<QAReflection | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedReflection, setEditedReflection] = useState('');
 
+  // Redux state
+  const { reflections, isLoadingReflections, isUpdatingReflection, isDeletingReflection, isDownloadingReflectionPDF } = useAppSelector((state) => state.journal);
+
+  // Transform and find the reflection
+  const qaReflections = useMemo(() => reflections.map(transformReflectionEntry), [reflections]);
+  const reflection = useMemo(() => qaReflections.find(r => r.id === reflectionId) || null, [qaReflections, reflectionId]);
+
+  // Fetch reflections if not loaded
   useEffect(() => {
-    const found = sampleQAReflections.find(r => r.id === reflectionId);
-    if (found) {
-      setReflection(found);
-      setEditedReflection(found.reflection);
+    if (reflections.length === 0 && !isLoadingReflections) {
+      dispatch(fetchReflectionsAsync());
     }
-  }, [reflectionId]);
+  }, [dispatch, reflections.length, isLoadingReflections]);
+
+  // Set edited reflection when reflection is found
+  useEffect(() => {
+    if (reflection) {
+      setEditedReflection(reflection.reflection);
+    }
+  }, [reflection]);
 
   useEffect(() => {
     if (editMode) {
@@ -48,11 +103,28 @@ const QAReflectionDetailScreen: React.FC = () => {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    if (editedReflection.trim()) {
-      // Here you would save to your data store
-      setReflection({ ...reflection, reflection: editedReflection });
-      setIsEditing(false);
+  const handleSave = async () => {
+    if (editedReflection.trim() && reflection) {
+      try {
+        const reflectionId = parseInt(reflection.id, 10);
+        await dispatch(updateReflectionAsync({ reflectionId, reflectionText: editedReflection.trim() })).unwrap();
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Reflection updated successfully',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+        setIsEditing(false);
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error || 'Failed to update reflection',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
     }
   };
 
@@ -61,44 +133,116 @@ const QAReflectionDetailScreen: React.FC = () => {
     setIsEditing(false);
   };
 
-  const handleDownloadPDF = () => {
-    // Here you would implement PDF generation
-    Alert.alert('Download PDF', 'PDF download functionality will be implemented here.');
+  const handleDownloadPDF = async () => {
+    if (reflection) {
+      try {
+        const reflectionId = parseInt(reflection.id, 10);
+        const result = await dispatch(downloadReflectionPDFAsync(reflectionId)).unwrap();
+        
+        if (result.pdfUrl) {
+          const canOpen = await Linking.canOpenURL(result.pdfUrl);
+          if (canOpen) {
+            await Linking.openURL(result.pdfUrl);
+            Toast.show({
+              type: 'success',
+              text1: 'Success',
+              text2: 'Opening PDF in browser...',
+              position: 'bottom',
+              visibilityTime: 2000,
+            });
+          } else {
+            Toast.show({
+              type: 'error',
+              text1: 'Error',
+              text2: 'Cannot open PDF URL',
+              position: 'bottom',
+              visibilityTime: 3000,
+            });
+          }
+        }
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error || 'Failed to download PDF',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
+    }
   };
 
   const handleDelete = () => {
     Alert.alert(
       'Delete Entry',
-      'Are you sure you want to delete this reflection?',
+      'Are you sure you want to delete this reflection? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            navigation.goBack();
+          onPress: async () => {
+            if (reflection) {
+              try {
+                const reflectionId = parseInt(reflection.id, 10);
+                await dispatch(deleteReflectionAsync(reflectionId)).unwrap();
+                Toast.show({
+                  type: 'success',
+                  text1: 'Success',
+                  text2: 'Reflection deleted successfully',
+                  position: 'bottom',
+                  visibilityTime: 3000,
+                });
+                navigation.goBack();
+              } catch (error: any) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Error',
+                  text2: error || 'Failed to delete reflection',
+                  position: 'bottom',
+                  visibilityTime: 3000,
+                });
+              }
+            }
           },
         },
       ]
     );
   };
 
-  if (!reflection) {
+  if (isLoadingReflections || !reflection) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Text>Loading...</Text>
+      <View style={[styles.container, { paddingTop: insets.top, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
       </View>
     );
   }
 
+  const isLoading = isUpdatingReflection || isDeletingReflection || isDownloadingReflectionPDF;
+
+  // Get loading message
+  const getLoadingMessage = () => {
+    if (isUpdatingReflection) return 'Updating...';
+    if (isDeletingReflection) return 'Deleting...';
+    if (isDownloadingReflectionPDF) return 'Downloading PDF...';
+    return 'Loading...';
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={getLoadingMessage()}
+      />
+
       {/* Header */}
       <Toolbar title={JOURNAL.QA_REFLECTIONS}
         onBackPress={handleBack}
         bottomMargin={30}
         backButtonColor={COLORS.PRIMARY} />
-      <View style={commonStyles.contentDefaultBackground}>
+
+      <View style={[commonStyles.contentDefaultBackground, isLoading && styles.contentDisabled]}>
         <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={{ paddingBottom: scale(120) }}>
             {/* Card 1: Entry Metadata */}
@@ -116,7 +260,13 @@ const QAReflectionDetailScreen: React.FC = () => {
               {reflection.questions.map((question: string, index: number) => (
                 <View key={index} style={styles.questionItem}>
                   <Text style={styles.questionNumber}>{index + 1}.</Text>
-                  <Text style={styles.questionText}>{question}</Text>
+                  <View style={styles.questionTextContainer}>
+                    <RenderHTML
+                      contentWidth={width - scale(80)}
+                      source={{ html: question }}
+                      baseStyle={styles.questionText}
+                    />
+                  </View>
                 </View>
               ))}
             </View>
@@ -146,11 +296,13 @@ const QAReflectionDetailScreen: React.FC = () => {
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.saveButton, !editedReflection.trim() && styles.saveButtonDisabled]}
+                      style={[styles.saveButton, (!editedReflection.trim() || isUpdatingReflection) && styles.saveButtonDisabled]}
                       onPress={handleSave}
-                      disabled={!editedReflection.trim()}
+                      disabled={!editedReflection.trim() || isUpdatingReflection}
                     >
-                      <Text style={styles.saveButtonText}>Save</Text>
+                      <Text style={styles.saveButtonText}>
+                        {isUpdatingReflection ? 'Saving...' : 'Save'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </>
@@ -165,11 +317,23 @@ const QAReflectionDetailScreen: React.FC = () => {
 
       {/* Action Buttons - Fixed at Bottom */}
       <View style={[styles.actionButtonsContainer, { paddingBottom: insets.bottom + scale(24) }]}>
-        <TouchableOpacity style={styles.downloadButton} onPress={handleDownloadPDF}>
-          <Text style={styles.downloadButtonText}>{JOURNAL.DOWNLOAD_PDF}</Text>
+        <TouchableOpacity
+          style={[styles.downloadButton, isDownloadingReflectionPDF && styles.downloadButtonDisabled]}
+          onPress={handleDownloadPDF}
+          disabled={isDownloadingReflectionPDF}
+        >
+          <Text style={styles.downloadButtonText}>
+            {isDownloadingReflectionPDF ? 'Downloading...' : JOURNAL.DOWNLOAD_PDF}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteButtonText}>{JOURNAL.DELETE_ENTRY}</Text>
+        <TouchableOpacity
+          style={[styles.deleteButton, isDeletingReflection && styles.deleteButtonDisabled]}
+          onPress={handleDelete}
+          disabled={isDeletingReflection}
+        >
+          <Text style={styles.deleteButtonText}>
+            {isDeletingReflection ? 'Deleting...' : JOURNAL.DELETE_ENTRY}
+          </Text>
         </TouchableOpacity>
       </View>
     </View >
@@ -265,8 +429,10 @@ const styles = StyleSheet.create({
     marginRight: scale(8),
     minWidth: scale(24),
   },
-  questionText: {
+  questionTextContainer: {
     flex: 1,
+  },
+  questionText: {
     fontSize: scaleFont(16),
     color: COLORS.TEXT_DARK,
     fontFamily: 'varela_round_regular',
@@ -379,6 +545,15 @@ const styles = StyleSheet.create({
   toggleContainer: {
     marginBottom: scale(16),
     marginHorizontal: scale(24),
+  },
+  downloadButtonDisabled: {
+    opacity: 0.5,
+  },
+  deleteButtonDisabled: {
+    opacity: 0.5,
+  },
+  contentDisabled: {
+    opacity: 0.5,
   },
 });
 

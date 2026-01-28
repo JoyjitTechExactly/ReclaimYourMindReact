@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -9,29 +9,80 @@ import { JOURNAL } from '../../constants/strings';
 import { commonStyles } from '../../styles/commonStyles';
 import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
-import { sampleJournalEntries, JournalEntry } from '../../constants/constantData';
+import type { JournalEntry } from '../../constants/constantData';
 import Toolbar from '../../components/common/Toolbar';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { fetchJournalsAsync, updateJournalAsync, deleteJournalAsync, downloadJournalPDFAsync } from '../../redux/slices/journal/journalSlice';
+import { JournalEntry as ApiJournalEntry } from '../../network/services/journalService';
+import Toast from 'react-native-toast-message';
+import { LoadingModal } from '../../components/modals';
 
 type JournalEntryDetailRouteProp = RouteProp<AppStackParamList, 'JournalEntryDetail'>;
 type JournalEntryDetailNavigationProp = StackNavigationProp<AppStackParamList, 'JournalEntryDetail'>;
+
+/**
+ * Parse date string from API format "28 Jan 2026, 11:19 AM" to separate date and time
+ */
+const parseApiDate = (dateString: string): { date: string; time: string } => {
+  try {
+    const parts = dateString.split(', ');
+    if (parts.length === 2) {
+      return {
+        date: parts[0],
+        time: parts[1],
+      };
+    }
+    return { date: dateString, time: '' };
+  } catch (error) {
+    return { date: dateString, time: '' };
+  }
+};
+
+/**
+ * Transform API journal entry to component format
+ */
+const transformJournalEntry = (apiEntry: ApiJournalEntry): JournalEntry => {
+  const { date, time } = parseApiDate(apiEntry.created_at);
+  return {
+    id: apiEntry.id.toString(),
+    title: '',
+    content: apiEntry.content,
+    date,
+    time,
+    createdAt: new Date(apiEntry.created_at),
+  };
+};
 
 const JournalEntryDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<JournalEntryDetailNavigationProp>();
   const route = useRoute<JournalEntryDetailRouteProp>();
   const { entryId, editMode } = route.params;
+  const dispatch = useAppDispatch();
 
-  const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
 
+  // Redux state
+  const { journals, isLoadingJournals, isUpdatingJournal, isDeletingJournal, isDownloadingJournalPDF } = useAppSelector((state) => state.journal);
+
+  // Transform and find the entry
+  const journalEntries = useMemo(() => journals.map(transformJournalEntry), [journals]);
+  const entry = useMemo(() => journalEntries.find(e => e.id === entryId) || null, [journalEntries, entryId]);
+
+  // Fetch journals if not loaded
   useEffect(() => {
-    const found = sampleJournalEntries.find(e => e.id === entryId);
-    if (found) {
-      setEntry(found);
-      setEditedContent(found.content);
+    if (journals.length === 0 && !isLoadingJournals) {
+      dispatch(fetchJournalsAsync());
     }
-  }, [entryId]);
+  }, [dispatch, journals.length, isLoadingJournals]);
+
+  // Set edited content when entry is found
+  useEffect(() => {
+    if (entry) {
+      setEditedContent(entry.content);
+    }
+  }, [entry]);
 
   useEffect(() => {
     if (editMode) {
@@ -47,11 +98,28 @@ const JournalEntryDetailScreen: React.FC = () => {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editedContent.trim() && entry) {
-      // Here you would save to your data store
-      setEntry({ ...entry, content: editedContent });
-      setIsEditing(false);
+      try {
+        const journalId = parseInt(entry.id, 10);
+        await dispatch(updateJournalAsync({ journalId, content: editedContent.trim() })).unwrap();
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: 'Journal entry updated successfully',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+        setIsEditing(false);
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error || 'Failed to update journal entry',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
     }
   };
 
@@ -62,14 +130,42 @@ const JournalEntryDetailScreen: React.FC = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (entry) {
-      // Implement download functionality
-      Alert.alert(
-        'Download PDF',
-        `Downloading journal entry from ${entry.date}...`,
-        [{ text: 'OK' }]
-      );
+      try {
+        const journalId = parseInt(entry.id, 10);
+        const result = await dispatch(downloadJournalPDFAsync(journalId)).unwrap();
+        
+        if (result.pdfUrl) {
+          const canOpen = await Linking.canOpenURL(result.pdfUrl);
+          if (canOpen) {
+            await Linking.openURL(result.pdfUrl);
+            Toast.show({
+              type: 'success',
+              text1: 'Success',
+              text2: 'Opening PDF in browser...',
+              position: 'bottom',
+              visibilityTime: 2000,
+            });
+          } else {
+            Toast.show({
+              type: 'error',
+              text1: 'Error',
+              text2: 'Cannot open PDF URL',
+              position: 'bottom',
+              visibilityTime: 3000,
+            });
+          }
+        }
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error || 'Failed to download PDF',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
     }
   };
 
@@ -85,29 +181,65 @@ const JournalEntryDetailScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            // Here you would delete from your data store
-            navigation.goBack();
+          onPress: async () => {
+            if (entry) {
+              try {
+                const journalId = parseInt(entry.id, 10);
+                await dispatch(deleteJournalAsync(journalId)).unwrap();
+                Toast.show({
+                  type: 'success',
+                  text1: 'Success',
+                  text2: 'Journal entry deleted successfully',
+                  position: 'bottom',
+                  visibilityTime: 3000,
+                });
+                navigation.goBack();
+              } catch (error: any) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Error',
+                  text2: error || 'Failed to delete journal entry',
+                  position: 'bottom',
+                  visibilityTime: 3000,
+                });
+              }
+            }
           },
         },
       ]
     );
   };
 
-  if (!entry) {
+  if (isLoadingJournals || !entry) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text>Loading...</Text>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
       </View>
     );
   }
 
+  const isLoading = isUpdatingJournal || isDeletingJournal || isDownloadingJournalPDF;
+
+  // Get loading message
+  const getLoadingMessage = () => {
+    if (isUpdatingJournal) return 'Updating...';
+    if (isDeletingJournal) return 'Deleting...';
+    if (isDownloadingJournalPDF) return 'Downloading PDF...';
+    return 'Loading...';
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      {/* Loading Modal */}
+      <LoadingModal
+        visible={isLoading}
+        message={getLoadingMessage()}
+      />
+
       {/* Header */}
       <Toolbar title={JOURNAL.JOURNAL_ENTRIES} onBackPress={handleBack} backButtonColor={COLORS.PRIMARY} />
 
-      <View style={commonStyles.contentDefaultBackground}>
+      <View style={[commonStyles.contentDefaultBackground, isLoading && styles.contentDisabled]}>
         <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
           <View>
             {/* Journal Entry Card */}
@@ -138,11 +270,13 @@ const JournalEntryDetailScreen: React.FC = () => {
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.saveButton, !editedContent.trim() && styles.saveButtonDisabled]}
+                      style={[styles.saveButton, (!editedContent.trim() || isUpdatingJournal) && styles.saveButtonDisabled]}
                       onPress={handleSave}
-                      disabled={!editedContent.trim()}
+                      disabled={!editedContent.trim() || isUpdatingJournal}
                     >
-                      <Text style={styles.saveButtonText}>Save</Text>
+                      <Text style={styles.saveButtonText}>
+                        {isUpdatingJournal ? 'Saving...' : 'Save'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </>
@@ -158,16 +292,22 @@ const JournalEntryDetailScreen: React.FC = () => {
       {/* Action Buttons - Fixed at Bottom */}
       <View style={[styles.actionButtonsContainer, { paddingBottom: insets.bottom + scale(24) }]}>
         <TouchableOpacity
-          style={styles.downloadButton}
+          style={[styles.downloadButton, isDownloadingJournalPDF && styles.downloadButtonDisabled]}
           onPress={handleDownload}
+          disabled={isDownloadingJournalPDF}
         >
-          <Text style={styles.downloadButtonText}>{JOURNAL.DOWNLOAD_PDF}</Text>
+          <Text style={styles.downloadButtonText}>
+            {isDownloadingJournalPDF ? 'Downloading...' : JOURNAL.DOWNLOAD_PDF}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={[styles.deleteButton, isDeletingJournal && styles.deleteButtonDisabled]}
           onPress={handleDelete}
+          disabled={isDeletingJournal}
         >
-          <Text style={styles.deleteButtonText}>{JOURNAL.DELETE_ENTRY}</Text>
+          <Text style={styles.deleteButtonText}>
+            {isDeletingJournal ? 'Deleting...' : JOURNAL.DELETE_ENTRY}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -338,6 +478,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.WHITE,
     fontFamily: 'varela_round_regular',
+  },
+  downloadButtonDisabled: {
+    opacity: 0.5,
+  },
+  deleteButtonDisabled: {
+    opacity: 0.5,
+  },
+  contentDisabled: {
+    opacity: 0.5,
   },
 });
 
