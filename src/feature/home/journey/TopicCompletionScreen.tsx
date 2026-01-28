@@ -19,16 +19,21 @@ const TopicCompletionScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TopicCompletionNavigationProp>();
   const route = useRoute<TopicCompletionRouteProp>();
-  const { topicId, stepId, stepType } = route.params;
+  const { topicId, stepId, stepType, nextTopicId } = route.params;
 
   // Get topics from Redux state
-  const { subTopics, phaseTopics, phases } = useAppSelector((state) => state.home);
+  const { subTopics, phaseTopics, phases, topicDetails } = useAppSelector((state) => state.home);
 
   const currentPhase = useMemo(() => {
     return phases.find(phase => phase.id.toString() === stepId);
   }, [phases, stepId]);
 
   const completedCount = useMemo(() => {
+    // First priority: use topicDetails from API (most accurate)
+    if (topicDetails) {
+      return topicDetails.completed_topics || 0;
+    }
+    // Fallback to other sources
     if (subTopics) {
       return subTopics.completed_topics || 0;
     }
@@ -36,9 +41,14 @@ const TopicCompletionScreen: React.FC = () => {
       return phaseTopics.completed_topics || 0;
     }
     return currentPhase?.completed_topics || 0;
-  }, [subTopics, phaseTopics, currentPhase]);
+  }, [topicDetails, subTopics, phaseTopics, currentPhase]);
 
   const totalCount = useMemo(() => {
+    // First priority: use topicDetails from API (most accurate)
+    if (topicDetails) {
+      return topicDetails.total_topics || 0;
+    }
+    // Fallback to other sources
     if (subTopics) {
       return subTopics.total_topics || 0;
     }
@@ -46,10 +56,26 @@ const TopicCompletionScreen: React.FC = () => {
       return phaseTopics.total_topics || 0;
     }
     return currentPhase?.total_topics || 0;
-  }, [subTopics, phaseTopics, currentPhase]);
+  }, [topicDetails, subTopics, phaseTopics, currentPhase]);
 
   const nextTopic = useMemo(() => {
-    // Find next topic from current topics list
+    // First, try to use next_topic_id from route params (passed from TopicDetailsScreen)
+    if (nextTopicId) {
+      return {
+        id: nextTopicId,
+        title: '', // Title not needed for navigation
+      };
+    }
+    
+    // Fallback: try to get next_topic_id from topicDetails in Redux
+    if (topicDetails?.next_topic_id) {
+      return {
+        id: topicDetails.next_topic_id.toString(),
+        title: '',
+      };
+    }
+    
+    // Last resort: Find next topic from current topics list
     let topicsList: any[] = [];
     
     if (subTopics?.subtopics) {
@@ -71,11 +97,11 @@ const TopicCompletionScreen: React.FC = () => {
       };
     }
     return null;
-  }, [subTopics, phaseTopics, topicId]);
+  }, [nextTopicId, topicDetails, subTopics, phaseTopics, topicId]);
 
   const handleNextTopic = () => {
     if (nextTopic) {
-      navigation.navigate('TopicDetails', {
+      navigation.replace('TopicDetails', {
         topicId: nextTopic.id,
         stepId: stepId,
         stepType: stepType,
@@ -87,23 +113,32 @@ const TopicCompletionScreen: React.FC = () => {
 
   const handleBackToOverview = () => {
     // For Action step, check if we need to go back to category or main overview
-    // if (stepType === 'Action' && stepData?.categories) {
-    //   const topicCategory = stepData.categories.find(cat =>
-    //     cat.topics.some(t => t.id === topicId)
-    //   );
-    //   if (topicCategory) {
-    //     navigation.navigate('TopicListing', {
-    //       stepId,
-    //       stepType,
-    //       categoryId: topicCategory.id
-    //     });
-    //   } else {
-    //     navigation.navigate('TopicListing', { stepId, stepType });
-    //   }
-    // } else {
-    //   navigation.navigate('TopicListing', { stepId, stepType });
-    // }
-    navigation.goBack();
+    // Use parent_id from subTopics if available (more accurate), otherwise try sub_topic_id from topicDetails
+    let categoryId: string | undefined;
+    if (stepType === 'Action') {
+      if (subTopics?.parent_id) {
+        categoryId = subTopics.parent_id.toString();
+      } else if (topicDetails?.sub_topic_id) {
+        categoryId = topicDetails.sub_topic_id.toString();
+      }
+    }
+    
+    // Reset navigation stack to go back to the original TopicListing page
+    // This prevents multiple TopicListing screens from stacking up
+    navigation.reset({
+      index: 1,
+      routes: [
+        { name: 'Dashboard' },
+        {
+          name: 'TopicListing',
+          params: {
+            stepId,
+            stepType,
+            ...(categoryId && { categoryId }),
+          },
+        },
+      ],
+    });
   };
 
   const getPrimaryButtonTitle = () => {

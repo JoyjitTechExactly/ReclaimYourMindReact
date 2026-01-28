@@ -16,6 +16,7 @@ import RootNavigator from './src/navigators/RootNavigator';
 import { COLORS } from './src/constants/colors';
 import { restoreAuthStateAsync } from './src/redux/slices/auth/authSlice';
 import { AppDispatch } from './src/redux/store';
+import Toast from 'react-native-toast-message';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -46,6 +47,7 @@ function AppContent() {
   return (
     <View style={styles.container}>
       <RootNavigator />
+      <Toast />
     </View>
   );
 }

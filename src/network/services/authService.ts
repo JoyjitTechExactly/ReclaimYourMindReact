@@ -1,6 +1,7 @@
 import apiClient from '../apiClient';
 import { ApiResponse, LoginRequest, SignUpRequest, SignUpResponseData, AuthResponse, VerifyOTPResponse } from '../types';
 import { handleError } from '../utils/errorHandler';
+import { API_ENDPOINTS } from '../../constants/endpoints';
 
 /**
  * Authentication Service
@@ -13,7 +14,7 @@ class AuthService {
   async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
     try {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/login',
+        API_ENDPOINTS.AUTH.LOGIN,
         credentials
       );
       return response.data;
@@ -31,7 +32,7 @@ class AuthService {
   async signUp(userData: SignUpRequest): Promise<ApiResponse<SignUpResponseData>> {
     try {
       const response = await apiClient.post<ApiResponse<SignUpResponseData>>(
-        '/auth/register',
+        API_ENDPOINTS.AUTH.REGISTER,
         userData
       );
       return response.data;
@@ -45,7 +46,7 @@ class AuthService {
    */
   async logout(): Promise<ApiResponse<void>> {
     try {
-      const response = await apiClient.post<ApiResponse<void>>('auth/logout');
+      const response = await apiClient.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.LOGOUT);
       return response.data;
     } catch (error) {
       return handleError(error);
@@ -58,7 +59,7 @@ class AuthService {
   async refreshToken(refreshToken: string): Promise<ApiResponse<{ token: string }>> {
     try {
       const response = await apiClient.post<ApiResponse<{ token: string }>>(
-        '/auth/refresh',
+        API_ENDPOINTS.AUTH.REFRESH_TOKEN,
         { refreshToken }
       );
       return response.data;
@@ -73,7 +74,7 @@ class AuthService {
   async forgotPassword(email: string): Promise<ApiResponse<void>> {
     try {
       const response = await apiClient.post<ApiResponse<void>>(
-        '/auth/forgot-password',
+        API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
         { email }
       );
       return response.data;
@@ -88,7 +89,7 @@ class AuthService {
   async verifyOTP(email: string, otp: string): Promise<ApiResponse<VerifyOTPResponse>> {
     try {
       const response = await apiClient.post<ApiResponse<VerifyOTPResponse>>(
-        '/auth/otp-verification',
+        API_ENDPOINTS.AUTH.VERIFY_OTP,
         { email, otp }
       );
       return response.data;
@@ -107,7 +108,7 @@ class AuthService {
   ): Promise<ApiResponse<void>> {
     try {
       const response = await apiClient.post<ApiResponse<void>>(
-        '/auth/reset-password',
+        API_ENDPOINTS.AUTH.RESET_PASSWORD,
         { email: email, token: token, password: password, password_confirmation: password }
       );
       return response.data;

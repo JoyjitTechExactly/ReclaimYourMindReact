@@ -1,6 +1,7 @@
 import apiClient from '../apiClient';
 import { ApiResponse, AuthResponse } from '../types';
 import { handleError } from '../utils/errorHandler';
+import { API_ENDPOINTS } from '../../constants/endpoints';
 
 /**
  * Profile Service
@@ -17,7 +18,7 @@ class ProfileService {
   async updateProfile(profileData: { name: string; email: string }): Promise<ApiResponse<AuthResponse>> {
     try {
       const response = await apiClient.put<ApiResponse<AuthResponse>>(
-        'user/manage-account',
+        API_ENDPOINTS.USER.MANAGE_ACCOUNT,
         profileData
       );
       return response.data;
@@ -35,7 +36,7 @@ class ProfileService {
   async changePassword(passwordData: { currentPassword: string; newPassword: string }): Promise<ApiResponse<AuthResponse>> {
     try {
       const response = await apiClient.put<ApiResponse<AuthResponse>>(
-        'user/change-password',
+        API_ENDPOINTS.USER.CHANGE_PASSWORD,
         passwordData
       );
       return response.data;
@@ -52,7 +53,7 @@ class ProfileService {
   async deleteAccount(): Promise<ApiResponse<AuthResponse>> {
     try {
       const response = await apiClient.delete<ApiResponse<AuthResponse>>(
-        'user/manage-account'
+        API_ENDPOINTS.USER.MANAGE_ACCOUNT
       );
       return response.data;
     } catch (error) {

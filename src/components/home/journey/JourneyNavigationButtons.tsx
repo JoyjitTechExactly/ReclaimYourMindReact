@@ -12,6 +12,9 @@ interface JourneyNavigationButtonsProps {
   onPrimaryPress: () => void;
   onSecondaryPress: () => void;
   containerStyle?: object;
+  primaryButtonDisabled?: boolean;
+  primaryButtonLoading?: boolean;
+  hidePrimaryButton?: boolean;
 }
 
 const JourneyNavigationButtons: React.FC<JourneyNavigationButtonsProps> = ({
@@ -20,16 +23,23 @@ const JourneyNavigationButtons: React.FC<JourneyNavigationButtonsProps> = ({
   onPrimaryPress,
   onSecondaryPress,
   containerStyle,
+  primaryButtonDisabled = false,
+  primaryButtonLoading = false,
+  hidePrimaryButton = false,
 }) => {
   return (
     <View style={[styles.container, containerStyle]}>
-      <CustomButton
-        title={primaryButtonTitle}
-        onPress={onPrimaryPress}
-        variant="primary"   
-        style={styles.primaryButton}
-        textStyle={styles.primaryButtonText}
-      />
+      {!hidePrimaryButton && (
+        <CustomButton
+          title={primaryButtonTitle}
+          onPress={onPrimaryPress}
+          variant="primary"   
+          style={styles.primaryButton}
+          textStyle={styles.primaryButtonText}
+          disabled={primaryButtonDisabled}
+          loading={primaryButtonLoading}
+        />
+      )}
       <CustomButton
         title={secondaryButtonTitle}
         onPress={onSecondaryPress}

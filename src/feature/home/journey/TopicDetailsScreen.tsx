@@ -1,14 +1,22 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import RenderHTML from 'react-native-render-html';
+import Toast from 'react-native-toast-message';
 import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
-import { Topic } from '../../../constants/constantData';
-import { useAppSelector } from '../../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { 
+  fetchTopicDetailsAsync, 
+  saveReflectionAsync, 
+  downloadPDFAsync, 
+  markTopicCompleteAsync,
+  clearTopicDetails
+} from '../../../redux/slices/home/homeSlice';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
 import VideoPlayer from '../../../components/home/VideoPlayer';
@@ -21,102 +29,228 @@ type TopicDetailsRouteProp = RouteProp<AppStackParamList, 'TopicDetails'>;
 
 const TopicDetailsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const navigation = useNavigation<TopicDetailsNavigationProp>();
   const route = useRoute<TopicDetailsRouteProp>();
   const { topicId, stepId, stepType } = route.params;
+  const dispatch = useAppDispatch();
   const [reflection, setReflection] = useState('');
+  const hasLoadedReflection = useRef(false);
 
-  // Get topics from Redux state
-  const { subTopics, phaseTopics } = useAppSelector((state) => state.home);
+  // Get topic details from Redux state
+  const { 
+    topicDetails, 
+    isLoadingTopicDetails, 
+    topicDetailsError, 
+    phaseTopics,
+    isSavingReflection,
+    isDownloadingPDF,
+    isMarkingComplete,
+  } = useAppSelector((state) => state.home);
 
-  const topic = useMemo(() => {
-    // Check subtopics (for Action with categoryId)
-    if (subTopics?.subtopics) {
-      const found = subTopics.subtopics.find(t => t.id.toString() === topicId);
-      if (found) {
-        return {
-          id: found.id.toString(),
-          title: found.title,
-          description: found.description.replace(/<[^>]*>/g, ''),
-          status: found.status || 'NOT_STARTED',
-          stepType: stepType,
-          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
-          keyLearningPoints: [],
-          reflectionQuestions: [],
-        } as Topic;
+  // Fetch topic details on mount - always fetch fresh data from API
+  useEffect(() => {
+    const topicIdNum = parseInt(topicId, 10);
+    if (!isNaN(topicIdNum)) {
+      // Clear any existing topic details to ensure we use fresh API data
+      dispatch(clearTopicDetails());
+      // Fetch fresh topic details from API
+      dispatch(fetchTopicDetailsAsync(topicIdNum));
+      // Reset reflection loading flag when topic changes
+      hasLoadedReflection.current = false;
+      setReflection('');
+    }
+  }, [topicId, dispatch]);
+
+  // Load saved reflection from API-fetched topicDetails only (ensure it matches current topicId)
+  useEffect(() => {
+    const topicIdNum = parseInt(topicId, 10);
+    // Only use reflection_answers if topicDetails exists, matches current topicId, and is from API response
+    if (
+      topicDetails && 
+      !isLoadingTopicDetails && 
+      topicDetails.sub_topic?.id === topicIdNum &&
+      topicDetails?.reflection_answers && 
+      !hasLoadedReflection.current
+    ) {
+      // reflection_answers is now an array of objects with reflection_text
+      if (Array.isArray(topicDetails.reflection_answers) && topicDetails.reflection_answers.length > 0) {
+        // Get the most recent reflection (last in array) or combine all reflections
+        const latestReflection = topicDetails.reflection_answers[topicDetails.reflection_answers.length - 1];
+        if (latestReflection?.reflection_text && latestReflection.reflection_text.trim().length > 0) {
+          setReflection(latestReflection.reflection_text);
+          hasLoadedReflection.current = true;
+        }
       }
     }
+  }, [topicDetails, topicId, isLoadingTopicDetails]);
+
+  // HTML content for rendering
+  const htmlContent = useMemo(() => {
+    return {
+      description: topicDetails?.sub_topic?.description || '',
+      keyPoints: topicDetails?.key_points || '',
+    };
+  }, [topicDetails]);
+
+  // Get reflection questions - ensure it's always an array
+  const reflectionQuestions = useMemo(() => {
+    if (!topicDetails || !topicDetails.reflection_questions) {
+      return [];
+    }
+    return Array.isArray(topicDetails.reflection_questions) 
+      ? topicDetails.reflection_questions 
+      : [];
+  }, [topicDetails]);
+
+  // Calculate progress percentage
+  const progressPercentage = useMemo(() => {
+    if (!topicDetails || topicDetails.total_topics === 0) return 0;
+    return (topicDetails.completed_topics / topicDetails.total_topics) * 100;
+  }, [topicDetails]);
+
+  // Check if topic is already completed
+  const isTopicCompleted = useMemo(() => {
+    return topicDetails?.sub_topic?.status === 'COMPLETED' || topicDetails?.sub_topic?.status === 'Completed';
+  }, [topicDetails]);
+
+  const handleSaveReflection = async () => {
+    if (!reflection.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter your reflection before saving.',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    const topicIdNum = parseInt(topicId, 10);
+    if (isNaN(topicIdNum)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Invalid topic ID',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    try {
+      await dispatch(saveReflectionAsync({ topicId: topicIdNum, reflection: reflection.trim() })).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Reflection saved successfully!',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+    } catch (error: any) {
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Failed to save reflection';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    const topicIdNum = parseInt(topicId, 10);
+    if (isNaN(topicIdNum)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Invalid topic ID',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    try {
+      const response = await dispatch(downloadPDFAsync(topicIdNum)).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'PDF download initiated. Please check your downloads folder.',
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+      // Note: You may need to implement actual file download handling here
+      // depending on how your API returns the PDF (blob, base64, URL, etc.)
+    } catch (error: any) {
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Failed to download PDF';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+    }
+  };
+
+  const handleMarkTopicComplete = async () => {
+    const topicIdNum = parseInt(topicId, 10);
+    const phaseIdNum = parseInt(stepId, 10);
     
-    // Check phase topics (for other steps)
-    if (phaseTopics?.topics) {
-      let topicsToSearch: any[] = [];
-      if (Array.isArray(phaseTopics.topics)) {
-        topicsToSearch = phaseTopics.topics;
-      } else if (phaseTopics.topics.data_1) {
-        topicsToSearch = [...phaseTopics.topics.data_1, ...(phaseTopics.topics.data_2 || [])];
-      }
+    if (isNaN(topicIdNum) || isNaN(phaseIdNum)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Invalid topic or phase ID',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    try {
+      await dispatch(markTopicCompleteAsync({ topicId: topicIdNum, phaseId: phaseIdNum })).unwrap();
       
-      const found = topicsToSearch.find(t => t.id.toString() === topicId);
-      if (found) {
-        return {
-          id: found.id.toString(),
-          title: found.title,
-          description: found.description.replace(/<[^>]*>/g, ''),
-          status: found.status || 'NOT_STARTED',
-          stepType: stepType,
-          videoUrl: found.video_url && found.video_url.length > 0 ? found.video_url[0] : undefined,
-          keyLearningPoints: [],
-          reflectionQuestions: [],
-        } as Topic;
-      }
+      // After marking complete, navigate to completion screen
+      const nextTopicId = topicDetails?.next_topic_id?.toString() || null;
+      navigation.replace('TopicCompletion', {
+        topicId: topicId,
+        stepId: stepId,
+        stepType: stepType,
+        nextTopicId: nextTopicId,
+      });
+    } catch (error: any) {
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Failed to mark topic as complete';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
     }
-    
-    return null;
-  }, [topicId, subTopics, phaseTopics, stepType]);
-
-  const handleSaveReflection = () => {
-    // Save reflection logic here
-    console.log('Reflection saved:', reflection);
-  };
-
-  const handleDownloadPDF = () => {
-    // Download PDF logic here
-    console.log('Download PDF');
-  };
-
-  const handleMarkTopicComplete = () => {
-    navigation.navigate('TopicCompletion', {
-      topicId: topicId,
-      stepId: stepId,
-      stepType: stepType,
-    });
   };
 
   const handleBackToOverview = () => {
-    // // For Action step, check if we need to go back to category or main overview
-    // if (stepType === 'Action' && stepData?.categories) {
-    //   const topicCategory = stepData.categories.find(cat => 
-    //     cat.topics.some(t => t.id === topicId)
-    //   );
-    //   if (topicCategory) {
-    //     navigation.navigate('TopicListing', { 
-    //       stepId, 
-    //       stepType, 
-    //       categoryId: topicCategory.id 
-    //     });
-    //   } else {
-    //     navigation.navigate('TopicListing', { stepId, stepType });
-    //   }
-    // } else {
-    //   navigation.navigate('TopicListing', { stepId, stepType });
-    // }
     navigation.goBack()
   };
 
-  if (!topic) {
+  // Show loading state
+  if (isLoadingTopicDetails) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Text>{JOURNEY.TOPIC_NOT_FOUND}</Text>
+      <View style={[styles.container, { paddingTop: insets.top }, commonStyles.center]}>
+        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+      </View>
+    );
+  }
+
+  // Show error state
+  if (topicDetailsError || !topicDetails) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, commonStyles.center]}>
+        <Text style={styles.errorText}>{topicDetailsError || JOURNEY.TOPIC_NOT_FOUND}</Text>
       </View>
     );
   }
@@ -146,12 +280,12 @@ const TopicDetailsScreen: React.FC = () => {
         </View>
 
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{topic.title}</Text>
+          <Text style={styles.headerTitle}>{topicDetails.sub_topic.title}</Text>
         </View>
 
         {/* Progress Bar */}
         <View style={styles.progressBarContainer}>
-          <View style={styles.progressBarFill} />
+          <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
         </View>
       </View>
 
@@ -163,35 +297,59 @@ const TopicDetailsScreen: React.FC = () => {
         nestedScrollEnabled={true}
       >
 
+        {/* Description */}
+        {htmlContent.description && (
+          <View style={[commonStyles.card, styles.section, { borderColor: COLORS.BORDER_LIGHT }]}>
+            <RenderHTML
+              contentWidth={width - scale(48)} // Account for padding
+              source={{ html: htmlContent.description }}
+              baseStyle={styles.htmlContent}
+              tagsStyles={{
+                p: { marginBottom: scale(8), color: COLORS.TEXT_PRIMARY },
+                ul: { marginBottom: scale(8) },
+                ol: { marginBottom: scale(8) },
+                li: { marginBottom: scale(4), color: COLORS.TEXT_PRIMARY },
+                strong: { fontWeight: '600', color: COLORS.TEXT_PRIMARY },
+                em: { fontStyle: 'italic', color: COLORS.TEXT_PRIMARY },
+              }}
+            />
+          </View>
+        )}
+
         {/* Video Player Section */}
-        {topic.videoUrl && (
+        {topicDetails.sub_topic.video_url && topicDetails.sub_topic.video_url.length > 0 && (
           <VideoPlayer
-            title={topic.title}
-            videoUrl={topic.videoUrl}
+            videoUrl={topicDetails.sub_topic.video_url[0]}
             variant="main"
-            currentTime="0:00"
           />
         )}
 
         {/* Key Learning Points */}
-        {topic.keyLearningPoints && topic.keyLearningPoints.length > 0 && (
+        {htmlContent.keyPoints && htmlContent.keyPoints.trim().length > 0 && (
           <View style={[commonStyles.card, styles.section, { borderColor: COLORS.BORDER_LIGHT }]}>
             <Text style={styles.sectionTitle}>{JOURNEY.KEY_LEARNING_POINTS}</Text>
-            {topic.keyLearningPoints.map((point, index) => (
-              <View key={index} style={styles.bulletPoint}>
-                <Text style={styles.bullet}>•</Text>
-                <Text style={styles.bulletText}>{point}</Text>
-              </View>
-            ))}
+            <RenderHTML
+              contentWidth={width - scale(48)} // Account for padding
+              source={{ html: htmlContent.keyPoints }}
+              baseStyle={styles.htmlContent}
+              tagsStyles={{
+                p: { marginBottom: scale(8), color: COLORS.TEXT_PRIMARY },
+                ul: { marginBottom: scale(8) },
+                ol: { marginBottom: scale(8) },
+                li: { marginBottom: scale(4), color: COLORS.TEXT_PRIMARY },
+                strong: { fontWeight: '600', color: COLORS.TEXT_PRIMARY },
+                em: { fontStyle: 'italic', color: COLORS.TEXT_PRIMARY },
+              }}
+            />
           </View>
         )}
 
         <View style={[commonStyles.card, { borderColor: COLORS.BORDER_LIGHT }]}>
           {/* Reflection Questions */}
-          {topic.reflectionQuestions && topic.reflectionQuestions.length > 0 && (
+          {Array.isArray(reflectionQuestions) && reflectionQuestions.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{JOURNEY.REFLECTION_QUESTIONS}</Text>
-              {topic.reflectionQuestions.map((question, index) => (
+              {reflectionQuestions.map((question, index) => (
                 <View key={index} style={styles.questionContainer}>
                   <Text style={styles.questionNumber}>{index + 1}.</Text>
                   <Text style={styles.questionText}>{question}</Text>
@@ -223,6 +381,7 @@ const TopicDetailsScreen: React.FC = () => {
               fullWidth={false}
               style={styles.downloadButton}
               textStyle={styles.downloadButtonText}
+              disabled={isDownloadingPDF}
             />
             <CustomButton
               title={JOURNEY.SAVE_REFLECTION}
@@ -231,8 +390,18 @@ const TopicDetailsScreen: React.FC = () => {
               fullWidth={false}
               style={styles.saveButton}
               textStyle={styles.saveButtonText}
+              disabled={isSavingReflection}
             />
           </View>
+          {/* Loading Indicators */}
+          {(isSavingReflection || isDownloadingPDF) && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={COLORS.PRIMARY} />
+              <Text style={styles.loadingText}>
+                {isSavingReflection ? 'Saving reflection...' : 'Downloading PDF...'}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -243,6 +412,9 @@ const TopicDetailsScreen: React.FC = () => {
           secondaryButtonTitle={JOURNEY.BACK_TO_OVERVIEW.replace('{stepType}', stepType)}
           onPrimaryPress={handleMarkTopicComplete}
           onSecondaryPress={handleBackToOverview}
+          primaryButtonDisabled={isMarkingComplete}
+          primaryButtonLoading={isMarkingComplete}
+          hidePrimaryButton={isTopicCompleted}
         />
       </View>
     </View>
@@ -277,9 +449,23 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    width: '30%', // Example progress - can be dynamic
     backgroundColor: COLORS.PROGRESS_BAR,
     borderRadius: scale(2),
+  },
+  descriptionText: {
+    ...commonStyles.textSmall,
+    lineHeight: scaleFont(20),
+    color: COLORS.TEXT_PRIMARY,
+  },
+  htmlContent: {
+    ...commonStyles.textSmall,
+    lineHeight: scaleFont(20),
+    color: COLORS.TEXT_PRIMARY,
+  },
+  errorText: {
+    ...commonStyles.textSmall,
+    color: COLORS.ERROR,
+    textAlign: 'center',
   },
   contentSection: {
     flex: 1,
@@ -364,6 +550,29 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     fontFamily: 'varela_round_regular',
     fontWeight: '600',
+  },
+  loadingContainer: {
+    ...commonStyles.row,
+    ...commonStyles.center,
+    ...commonStyles.mt8,
+    gap: scale(8),
+  },
+  loadingText: {
+    ...commonStyles.textSmall,
+    color: COLORS.TEXT_MUTED,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.WHITE,
+    ...commonStyles.row,
+    ...commonStyles.center,
+    paddingVertical: scale(12),
+    gap: scale(8),
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_LIGHT,
   },
 });
 

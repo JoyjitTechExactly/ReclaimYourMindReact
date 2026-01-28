@@ -21,7 +21,7 @@ export type AppStackParamList = {
   TopicListing: { stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action'; categoryId?: string };
   TopicDetails: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
   ExtraVideos: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
-  TopicCompletion: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action' };
+  TopicCompletion: { topicId: string; stepId: string; stepType: 'Awareness' | 'Acceptance' | 'Appreciation' | 'Action'; nextTopicId?: string | null };
   // Journal Navigator Screens
   NewJournalEntry: undefined;
   JournalEntryDetail: { entryId: string; editMode?: boolean };

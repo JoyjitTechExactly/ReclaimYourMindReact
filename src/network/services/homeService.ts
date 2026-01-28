@@ -1,6 +1,7 @@
 import apiClient from '../apiClient';
 import { ApiResponse } from '../types';
 import { handleError } from '../utils/errorHandler';
+import { API_ENDPOINTS, buildEndpoint } from '../../constants/endpoints';
 
 /**
  * Phase Interface based on API response
@@ -86,6 +87,43 @@ export interface PhaseTopicsResponse {
 }
 
 /**
+ * Reflection Answer Interface
+ */
+export interface ReflectionAnswer {
+  id: number;
+  topic_title: string;
+  phase_name: string;
+  reflection_text: string;
+  reflection_question: string | null;
+  created_at: string;
+}
+
+/**
+ * Topic Details Response Interface
+ */
+export interface TopicDetailsResponse {
+  sub_topic: {
+    id: number;
+    title: string;
+    status: string | null;
+    video_url: string[] | null;
+    description: string;
+    isSubTopicAvailable: boolean;
+  };
+  phase_name: string;
+  phase_id: number;
+  key_points: string;
+  reflection_questions: string[] | null;
+  reflection_answers: ReflectionAnswer[];
+  next_topic_id: number | null;
+  next_subphase_id: number | null;
+  completed_topics: number;
+  total_topics: number;
+  sub_topic_name: string | null;
+  sub_topic_id: number | null;
+}
+
+/**
  * Home Service
  * Handles all home-related API calls
  */
@@ -97,7 +135,7 @@ class HomeService {
    */
   async getPhases(): Promise<ApiResponse<Phase[]>> {
     try {
-      const response = await apiClient.get<ApiResponse<Phase[]>>('user/phases');
+      const response = await apiClient.get<ApiResponse<Phase[]>>(API_ENDPOINTS.USER.PHASES);
       return response.data;
     } catch (error) {
       return handleError(error);
@@ -113,10 +151,8 @@ class HomeService {
    */
   async getPhaseSubTopics(phaseId: number, categoryId: number): Promise<ApiResponse<PhaseSubTopicsResponse>> {
     try {
-      const endpoint = `user/phase/${phaseId}/${categoryId}`;
-      console.log('Calling API endpoint (with category):', endpoint);
+      const endpoint = API_ENDPOINTS.USER.PHASE_WITH_CATEGORY(phaseId, categoryId);
       const response = await apiClient.get<ApiResponse<PhaseSubTopicsResponse>>(endpoint);
-      console.log('API Response received:', response.data);
       return response.data;
     } catch (error) {
       console.error('API Error in getPhaseSubTopics:', error);
@@ -132,13 +168,89 @@ class HomeService {
    */
   async getPhaseTopics(phaseId: number): Promise<ApiResponse<PhaseTopicsResponse>> {
     try {
-      const endpoint = `user/phase/${phaseId}`;
-      console.log('Calling API endpoint (phase only):', endpoint);
+      const endpoint = API_ENDPOINTS.USER.PHASE(phaseId);
       const response = await apiClient.get<ApiResponse<PhaseTopicsResponse>>(endpoint);
-      console.log('API Response received:', response.data);
       return response.data;
     } catch (error) {
       console.error('API Error in getPhaseTopics:', error);
+      return handleError(error);
+    }
+  }
+
+  /**
+   * Get topic details
+   * Endpoint: user/topic/{topicId}
+   * Method: GET
+   * @param topicId - The topic ID
+   */
+  async getTopicDetails(topicId: number): Promise<ApiResponse<TopicDetailsResponse>> {
+    try {
+      const endpoint = API_ENDPOINTS.USER.TOPIC(topicId);
+      const response = await apiClient.get<ApiResponse<TopicDetailsResponse>>(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in getTopicDetails:', error);
+      return handleError(error);
+    }
+  }
+
+  /**
+   * Mark topic complete
+   * Endpoint: user/progress
+   * Method: POST
+   * @param topic_id - The topic ID
+   * @param phase_id - The phase ID
+   * @param status - The status of the topic
+   */
+  async markTopicComplete(topicId: number, phaseId: number): Promise<ApiResponse<void>> {
+    try {
+      const endpoint = API_ENDPOINTS.USER.MARK_TOPIC_COMPLETE;
+      const response = await apiClient.put<ApiResponse<void>>(endpoint, {
+        topic_id: topicId,
+        phase_id: phaseId,
+        status: "Completed",
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error in markTopicComplete:', error);
+      return handleError(error);
+    }
+  }
+
+  /**
+   * Save reflection
+   * Endpoint: user/reflections/store
+   * Method: POST
+   * @param topicId - The topic ID
+   * @param reflection - The reflection text
+   */
+  async saveReflection(topicId: number, reflection: string): Promise<ApiResponse<ReflectionAnswer>> {
+    try {
+      const endpoint = API_ENDPOINTS.USER.SAVE_REFLECTION;
+      const response = await apiClient.post<ApiResponse<ReflectionAnswer>>(endpoint, {
+        topic_id: topicId,
+        reflection_text: reflection,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error in saveReflection:', error);
+      return handleError(error);
+    }
+  }
+
+  /**
+   * Download PDF
+   * Endpoint: user/reflections/download-pdf
+   * Method: GET
+   * @param topicId - The topic ID
+   */
+  async downloadPDF(topicId: number): Promise<ApiResponse<void>> {
+    try {
+      const endpoint = API_ENDPOINTS.USER.DOWNLOAD_PDF(topicId);
+      const response = await apiClient.get<ApiResponse<void>>(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in downloadPDF:', error);
       return handleError(error);
     }
   }

@@ -1,14 +1,20 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList } from 'react-native';
+import React, { useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Toast from 'react-native-toast-message';
 import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
 import { commonStyles } from '../../../styles/commonStyles';
 import { scale, scaleFont } from '../../../utils/scaling';
 import { Topic, ExtraVideo } from '../../../constants/constantData';
-import { useAppSelector } from '../../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { 
+  fetchTopicDetailsAsync, 
+  markTopicCompleteAsync,
+  clearTopicDetails
+} from '../../../redux/slices/home/homeSlice';
 import BackButton from '../../../components/common/BackButton';
 import VideoPlayer from '../../../components/home/VideoPlayer';
 import { JOURNEY } from '../../../constants/strings';
@@ -23,9 +29,28 @@ const ExtraVideosScreen: React.FC = () => {
   const navigation = useNavigation<ExtraVideosNavigationProp>();
   const route = useRoute<ExtraVideosRouteProp>();
   const { topicId, stepId, stepType } = route.params;
+  const dispatch = useAppDispatch();
 
-  // Get topics from Redux state
-  const { subTopics, phaseTopics } = useAppSelector((state) => state.home);
+  // Get topics and topic details from Redux state
+  const { 
+    subTopics, 
+    phaseTopics,
+    topicDetails,
+    isLoadingTopicDetails,
+    topicDetailsError,
+    isMarkingComplete,
+  } = useAppSelector((state) => state.home);
+
+  // Fetch topic details on mount - always fetch fresh data from API
+  useEffect(() => {
+    const topicIdNum = parseInt(topicId, 10);
+    if (!isNaN(topicIdNum)) {
+      // Clear any existing topic details to ensure we use fresh API data
+      dispatch(clearTopicDetails());
+      // Fetch fresh topic details from API
+      dispatch(fetchTopicDetailsAsync(topicIdNum));
+    }
+  }, [topicId, dispatch]);
 
   const topic = useMemo(() => {
     // Check subtopics (for Action with categoryId)
@@ -118,13 +143,53 @@ const ExtraVideosScreen: React.FC = () => {
     return videos;
   }, [topicId, subTopics, phaseTopics]);
 
+  // Calculate progress percentage
+  const progressPercentage = useMemo(() => {
+    if (!topicDetails || topicDetails.total_topics === 0) return 0;
+    return (topicDetails.completed_topics / topicDetails.total_topics) * 100;
+  }, [topicDetails]);
 
-  const handleMarkTopicComplete = () => {
-    navigation.navigate('TopicCompletion', {
-      topicId: topicId,
-      stepId: stepId,
-      stepType: stepType,
-    });
+  // Check if topic is already completed
+  const isTopicCompleted = useMemo(() => {
+    return topicDetails?.sub_topic?.status === 'COMPLETED' || topicDetails?.sub_topic?.status === 'Completed';
+  }, [topicDetails]);
+
+  const handleMarkTopicComplete = async () => {
+    const topicIdNum = parseInt(topicId, 10);
+    const phaseIdNum = parseInt(stepId, 10);
+    
+    if (isNaN(topicIdNum) || isNaN(phaseIdNum)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Invalid topic or phase ID',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    try {
+      await dispatch(markTopicCompleteAsync({ topicId: topicIdNum, phaseId: phaseIdNum })).unwrap();
+      
+      // After marking complete, navigate to completion screen
+      const nextTopicId = topicDetails?.next_topic_id?.toString() || null;
+      navigation.replace('TopicCompletion', {
+        topicId: topicId,
+        stepId: stepId,
+        stepType: stepType,
+        nextTopicId: nextTopicId,
+      });
+    } catch (error: any) {
+      const errorMessage = typeof error === 'string' ? error : error?.message || 'Failed to mark topic as complete';
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: errorMessage,
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
+    }
   };
 
   const handleBackToOverview = () => {
@@ -152,15 +217,20 @@ const ExtraVideosScreen: React.FC = () => {
   const renderVideoItem = ({ item }: { item: ExtraVideo }) => {
     return (
       <VideoPlayer
-        title={item.title}
-        duration={item.duration}
         videoUrl={item.videoUrl}
-        thumbnailUrl={item.thumbnailUrl}
         variant="card"
-        showFullscreenIcon={true}
       />
     );
   };
+
+  // Show loading state
+  if (isLoadingTopicDetails) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, commonStyles.center]}>
+        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+      </View>
+    );
+  }
 
   if (!topic) {
     return (
@@ -199,18 +269,9 @@ const ExtraVideosScreen: React.FC = () => {
         </View>
 
         {/* Progress Bar */}
-        {extraVideos.length > 0 && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBarFill,
-                  { width: '25%' }, // Example progress
-                ]}
-              />
-            </View>
-          </View>
-        )}
+        <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBarFill, { width: `${progressPercentage}%` }]} />
+        </View>
       </View>
       <ScrollView
         style={{ flex: 1 }}
@@ -241,6 +302,9 @@ const ExtraVideosScreen: React.FC = () => {
           secondaryButtonTitle={JOURNEY.BACK_TO_OVERVIEW.replace('{stepType}', stepType)}
           onPrimaryPress={handleMarkTopicComplete}
           onSecondaryPress={handleBackToOverview}
+          primaryButtonDisabled={isMarkingComplete}
+          primaryButtonLoading={isMarkingComplete}
+          hidePrimaryButton={isTopicCompleted}
         />
       </View>
     </View>
@@ -266,14 +330,12 @@ const styles = StyleSheet.create({
     color: COLORS.PRIMARY,
     fontFamily: 'varela_round_regular',
   },
-  progressSection: {
-    ...commonStyles.mb24,
-  },
   progressBarContainer: {
     height: scale(4),
     backgroundColor: COLORS.BORDER_LIGHT,
     borderRadius: scale(2),
     overflow: 'hidden',
+    ...commonStyles.mb8,
   },
   progressBarFill: {
     height: '100%',

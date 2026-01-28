@@ -26,15 +26,10 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  title,
-  duration,
   videoUrl,
-  thumbnailUrl,
   variant = 'main',
   onPress,
   containerStyle,
-  showFullscreenIcon = true,
-  currentTime,
 }) => {
   // Get YouTube video ID for embedding
   const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
@@ -49,7 +44,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             height={containerHeight}
             videoId={videoId}
             play={false}
-            onChangeState={(state: string) => {
+            onChangeState={() => {
               // Handle player state changes if needed
             }}
             webViewStyle={{ 
