@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, Touchab
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import RenderHTML from 'react-native-render-html';
 import { scale, scaleFont } from '../../utils/scaling';
 import { COLORS } from '../../constants/colors';
 import { JOURNAL } from '../../constants/strings';
@@ -12,6 +11,7 @@ import { ImagePath } from '../../constants/imagePath';
 import { AppStackParamList } from '../../navigators/types';
 import type { QAReflection } from '../../constants/constantData';
 import Toolbar from '../../components/common/Toolbar';
+import HtmlRenderer from '../../components/common/HtmlRenderer';
 import JourneyTags from '../../components/home/journey/JourneyTags';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { fetchReflectionsAsync, updateReflectionAsync, deleteReflectionAsync, downloadReflectionPDFAsync } from '../../redux/slices/journal/journalSlice';
@@ -260,10 +260,12 @@ const QAReflectionDetailScreen: React.FC = () => {
                 <View key={index} style={styles.questionItem}>
                   <Text style={styles.questionNumber}>{index + 1}.</Text>
                   <View style={styles.questionTextContainer}>
-                    <RenderHTML
-                      contentWidth={width - scale(80)}
-                      source={{ html: question }}
-                      baseStyle={styles.questionText}
+                    <HtmlRenderer
+                      html={question}
+                      contentWidth={width - scale(112)}
+                      textColor={COLORS.TEXT_DARK}
+                      fontSize={scaleFont(16)}
+                      lineHeight={scaleFont(24)}
                     />
                   </View>
                 </View>

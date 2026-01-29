@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TextInput, ActivityIndicator, useWi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import RenderHTML from 'react-native-render-html';
 import Toast from 'react-native-toast-message';
 import { AppStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
@@ -19,6 +18,7 @@ import {
 } from '../../../redux/slices/home/homeSlice';
 import BackButton from '../../../components/common/BackButton';
 import CustomButton from '../../../components/common/CustomButton';
+import HtmlRenderer from '../../../components/common/HtmlRenderer';
 import VideoPlayer from '../../../components/home/VideoPlayer';
 import { JOURNEY } from '../../../constants/strings';
 import JourneyTags from '../../../components/home/journey/JourneyTags';
@@ -300,18 +300,12 @@ const TopicDetailsScreen: React.FC = () => {
         {/* Description */}
         {htmlContent.description && (
           <View style={[commonStyles.card, styles.section, { borderColor: COLORS.BORDER_LIGHT }]}>
-            <RenderHTML
-              contentWidth={width - scale(48)} // Account for padding
-              source={{ html: htmlContent.description }}
-              baseStyle={styles.htmlContent}
-              tagsStyles={{
-                p: { marginBottom: scale(8), color: COLORS.TEXT_PRIMARY },
-                ul: { marginBottom: scale(8) },
-                ol: { marginBottom: scale(8) },
-                li: { marginBottom: scale(4), color: COLORS.TEXT_PRIMARY },
-                strong: { fontWeight: '600', color: COLORS.TEXT_PRIMARY },
-                em: { fontStyle: 'italic', color: COLORS.TEXT_PRIMARY },
-              }}
+            <HtmlRenderer
+              html={htmlContent.description}
+              contentWidth={width - scale(48)}
+              textColor={COLORS.TEXT_PRIMARY}
+              fontSize={scaleFont(14)}
+              lineHeight={scaleFont(22)}
             />
           </View>
         )}
@@ -328,18 +322,12 @@ const TopicDetailsScreen: React.FC = () => {
         {htmlContent.keyPoints && htmlContent.keyPoints.trim().length > 0 && (
           <View style={[commonStyles.card, styles.section, { borderColor: COLORS.BORDER_LIGHT }]}>
             <Text style={styles.sectionTitle}>{JOURNEY.KEY_LEARNING_POINTS}</Text>
-            <RenderHTML
-              contentWidth={width - scale(48)} // Account for padding
-              source={{ html: htmlContent.keyPoints }}
-              baseStyle={styles.htmlContent}
-              tagsStyles={{
-                p: { marginBottom: scale(8), color: COLORS.TEXT_PRIMARY },
-                ul: { marginBottom: scale(8) },
-                ol: { marginBottom: scale(8) },
-                li: { marginBottom: scale(4), color: COLORS.TEXT_PRIMARY },
-                strong: { fontWeight: '600', color: COLORS.TEXT_PRIMARY },
-                em: { fontStyle: 'italic', color: COLORS.TEXT_PRIMARY },
-              }}
+            <HtmlRenderer
+              html={htmlContent.keyPoints}
+              contentWidth={width - scale(48)}
+              textColor={COLORS.TEXT_PRIMARY}
+              fontSize={scaleFont(14)}
+              lineHeight={scaleFont(22)}
             />
           </View>
         )}
@@ -453,11 +441,6 @@ const styles = StyleSheet.create({
     borderRadius: scale(2),
   },
   descriptionText: {
-    ...commonStyles.textSmall,
-    lineHeight: scaleFont(20),
-    color: COLORS.TEXT_PRIMARY,
-  },
-  htmlContent: {
     ...commonStyles.textSmall,
     lineHeight: scaleFont(20),
     color: COLORS.TEXT_PRIMARY,
