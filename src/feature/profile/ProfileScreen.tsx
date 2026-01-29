@@ -161,14 +161,14 @@ const ProfileScreen: React.FC = () => {
 
   const handlePrivacyPolicy = () => {
     // Open privacy policy link
-    Linking.openURL('https://example.com/privacy-policy').catch(() => {
+    Linking.openURL('http://54.163.218.252/privacy-policy').catch(() => {
       Alert.alert(PROFILE.ERROR_TITLE, PROFILE.PRIVACY_POLICY_ERROR);
     });
   };
 
   const handleTermsAndCondition = () => {
     // Open terms and condition link
-    Linking.openURL('https://example.com/terms').catch(() => {
+    Linking.openURL('http://54.163.218.252/terms-of-service').catch(() => {
       Alert.alert(PROFILE.ERROR_TITLE, PROFILE.TERMS_ERROR);
     });
   };

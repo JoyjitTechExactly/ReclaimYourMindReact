@@ -60,27 +60,6 @@ const HomeScreen: React.FC = () => {
         stepType: stepType,
       });
     }
-
-  //   if (step.isSubPhaseAvailable === true) {
-  //     // If sub-phases are available, go to ActionIntro (category selection)
-  //     navigation.navigate('ActionIntro');
-  //     return;
-  //   } else {
-  //     // If no sub-phases, go directly to TopicListing
-  //     // Use replace to ensure we don't go back to ActionIntro if it was previously visited
-  //     navigation.replace('TopicListing', {
-  //       stepId: step.id,
-  //       stepType: stepType,
-  //     });
-  //     return;
-  //   }
-  // } else {
-  //   // Other steps go directly to TopicListing
-  //   navigation.navigate('TopicListing', {
-  //     stepId: step.id,
-  //     stepType: stepType,
-  //   });
-  // }
   };
 
   const handleContinueWhereLeftOff = async () => {
