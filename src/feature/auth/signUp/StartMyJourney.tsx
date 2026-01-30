@@ -66,7 +66,7 @@ const StartMyJourney: React.FC = () => {
 
   return (
     <View style={[commonStyles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.TEXT_PRIMARY} />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.BACKGROUND} />
       <ScrollView style={commonStyles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header Section with Dark Background */}
         <View style={styles.headerSection}>

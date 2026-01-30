@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -20,14 +20,12 @@ import Toast from 'react-native-toast-message';
 import { navigationRef } from './src/utils/navigationRef';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer ref={navigationRef}>
           <StatusBar 
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
+            barStyle="dark-content" 
             backgroundColor={COLORS.BACKGROUND}
           />
           <AppContent />

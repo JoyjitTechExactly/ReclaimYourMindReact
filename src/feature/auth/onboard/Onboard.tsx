@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../../navigators/types';
 import { COLORS } from '../../../constants/colors';
@@ -15,6 +15,17 @@ type OnboardNavigationProp = StackNavigationProp<AuthStackParamList, 'Onboard'>;
 
 const Onboard: React.FC = () => {
   const navigation = useNavigation<OnboardNavigationProp>();
+
+  // Update status bar when screen is focused - always dark content
+  useFocusEffect(
+    React.useCallback(() => {
+      StatusBar.setBarStyle('dark-content');
+      return () => {
+        // Reset to dark-content when leaving this screen
+        StatusBar.setBarStyle('dark-content');
+      };
+    }, [])
+  );
 
   const handleCreateAccount = () => {
     navigation.navigate('SignUp');
